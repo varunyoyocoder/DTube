@@ -1,0 +1,21 @@
+<h1>Login</h1>
+<form action="/login" method="POST">
+    <div>
+        <label for="email">Email:</label>
+        <input type ="email" id = "email" name="email" value="<%= email || '' %>"required>
+<% if (error1) { %>
+    <p style="color:red;"><%= error1 %></p>
+<% } %>
+</div>
+<div>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+<% if (error2) { %>
+    <p style="color:red;"><%= error2 %></p>
+<% } %>
+    <a href="/forgotpassword">Forgot Password?</a>
+    </div>
+    <button type="submit">LOGIN</button>
+
+</form>
+<a href="/register">Don't have an account? Register here.</a>
