@@ -17,6 +17,9 @@
 <% if (error2) { %>
     <p style="color:red;"><%= error2 %></p>
 <% } %>
+<div class="g-recaptcha" data-sitekey="<%= siteKey %>">
+    </div>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </div>
     <button type="submit">Register</button>
 </form>

@@ -13,9 +13,14 @@
 <% if (error2) { %>
     <p style="color:red;"><%= error2 %></p>
 <% } %>
+<div class="g-recaptcha" data-sitekey="<%= siteKey %>">
+    </div>
+    
     <a href="/forgotpassword">Forgot Password?</a>
     </div>
     <button type="submit">LOGIN</button>
 
 </form>
 <a href="/auth/register">Don't have an account? Register here.</a>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+

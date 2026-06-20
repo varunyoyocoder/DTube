@@ -8,6 +8,7 @@ const strongPassword = require("../utils/password");
 const generateAccessToken = require("../utils/accesstoken");
 
 const refreshTokens = require("../utils/refreshTokens");
+const axios=require("axios");
 
 exports.getRegister = (req, res) => {
   res.render("register.ejs", {
@@ -15,10 +16,37 @@ exports.getRegister = (req, res) => {
     username: null,
     error1: null,
     error2: null,
+    siteKey: process.env.RECAPTCHA_SITE_KEY,
   });
 };
 
 exports.register = async (req, res) => {
+const captchaToken = req.body["g-recaptcha-response"];
+if (!captchaToken) {
+  return res.render("register.ejs", {
+    email,
+    username,
+    error1: "Please complete reCAPTCHA",
+    error2: null,
+    siteKey: process.env.RECAPTCHA_SITE_KEY,
+  });
+}
+const verifyURL =
+  `https://www.google.com/recaptcha/api/siteverify` +
+  `?secret=${process.env.RECAPTCHA_SECRET_KEY}` +
+  `&response=${captchaToken}`;
+
+const response = await axios.post(verifyURL);
+
+if (!response.data.success) {
+  return res.render("register.ejs", {
+    email,
+    username,
+    error1: "reCAPTCHA verification failed",
+    error2: null,
+    siteKey: process.env.RECAPTCHA_SITE_KEY,
+  });
+}
   try {
     console.log("BODY:", req.body);
     console.log("HEADERS:", req.headers["content-type"]);
@@ -31,6 +59,7 @@ exports.register = async (req, res) => {
         username: null,
         error1: "Email already exists",
         error2: null,
+        siteKey: process.env.RECAPTCHA_SITE_KEY,
       });
     }
     if (!strongPassword(password)) {
@@ -39,6 +68,7 @@ exports.register = async (req, res) => {
         username: username,
         error1: null,
         error2: "Weak password",
+        siteKey: process.env.RECAPTCHA_SITE_KEY,
       });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -64,18 +94,46 @@ exports.getLogin = (req, res) => {
     email: null,
     error1: null,
     error2: null,
+    siteKey: process.env.RECAPTCHA_SITE_KEY,
   });
 };
 
 exports.login = async (req, res) => {
+  
   const { email, password } = req.body;
+  const captchaToken = req.body["g-recaptcha-response"];
 
+  if (!captchaToken) {
+    return res.render("login.ejs", {
+      email,
+      error1: "Please complete reCAPTCHA",
+      error2: null,
+      siteKey: process.env.RECAPTCHA_SITE_KEY,
+    });
+  }
+
+  const verifyURL =
+    `https://www.google.com/recaptcha/api/siteverify` +
+    `?secret=${process.env.RECAPTCHA_SECRET_KEY}` +
+    `&response=${captchaToken}`;
+
+  const response = await axios.post(verifyURL);
+
+  if (!response.data.success) {
+    return res.render("login.ejs", {
+      email,
+      error1: "reCAPTCHA failed",
+      error2: null,
+      siteKey: process.env.RECAPTCHA_SITE_KEY,
+    });
+  }
   const user = await User.findOne({ email });
 
   if (!user) {
     return res.render("login.ejs", {
       error1: "Email not found",
       error2: null,
+      siteKey: process.env.RECAPTCHA_SITE_KEY,
     });
   }
 
@@ -86,6 +144,7 @@ exports.login = async (req, res) => {
       email,
       error1: null,
       error2: "Invalid password",
+      siteKey: process.env.RECAPTCHA_SITE_KEY,
     });
   }
 

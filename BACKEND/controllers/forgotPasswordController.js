@@ -10,6 +10,8 @@ exports.getForgotPassword = (req, res) => {
     error: null,
     showOTP: false,
     email: "",
+    siteKey: process.env.RECAPTCHA_SITE_KEY,
+
   });
 };
 
