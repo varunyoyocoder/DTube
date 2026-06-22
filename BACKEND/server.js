@@ -9,8 +9,9 @@ const ejs = require('ejs');
 app.set("view engine", "ejs");
 
 const connectDB = require("./config/db");
-const authenticateToken = require("./middleware/authenticateToken");
+const authenticateToken = require("./middleware/authenticateaccessToken");
 const authRoutes = require("./routes/auth");
+const videoRoutes = require("./routes/video");
 const forgotPasswordRoutes = require("./routes/forgotpassword");
 const resetPasswordRoutes = require("./routes/resetpassword");
 
@@ -18,14 +19,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 connectDB();
 app.use("/auth", authRoutes);
+app.use("/videos", videoRoutes);
 app.use("/forgotpassword", forgotPasswordRoutes);
 app.use("/resetpassword", resetPasswordRoutes);
 
 
 const posts = [
-  { username: "tharun", title: "post1" },
+  { username: "Tharun", title: "post1" },
   {
-    username: "tharun",
+    username: "Tharun",
     title: "post2",
   },
   {
@@ -39,7 +41,6 @@ app.get("/", (req, res) => {
 });
 
 app.get("/posts", authenticateToken, (req, res) => {
-  console.log(req.user);
   res.json(posts.filter((post) => post.username === req.user.username));
 });
 

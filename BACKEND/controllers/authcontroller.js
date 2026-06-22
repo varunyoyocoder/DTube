@@ -2,13 +2,13 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
+const RefreshTokens=require("../models/RefreshTokens");
 
 const strongPassword = require("../utils/password");
 
 const generateAccessToken = require("../utils/accesstoken");
 
-const refreshTokens = require("../utils/refreshTokens");
-const axios=require("axios");
+const axios = require("axios");
 
 exports.getRegister = (req, res) => {
   res.render("register.ejs", {
@@ -21,35 +21,36 @@ exports.getRegister = (req, res) => {
 };
 
 exports.register = async (req, res) => {
-const captchaToken = req.body["g-recaptcha-response"];
-if (!captchaToken) {
-  return res.render("register.ejs", {
-    email,
-    username,
-    error1: "Please complete reCAPTCHA",
-    error2: null,
-    siteKey: process.env.RECAPTCHA_SITE_KEY,
-  });
-}
-const verifyURL =
-  `https://www.google.com/recaptcha/api/siteverify` +
-  `?secret=${process.env.RECAPTCHA_SECRET_KEY}` +
-  `&response=${captchaToken}`;
+  const { username, email, password } = req.body;
+  const captchaToken = req.body["g-recaptcha-response"];
 
-const response = await axios.post(verifyURL);
+  if (!captchaToken) {
+    return res.render("register.ejs", {
+      email,
+      username,
+      error1: "Please complete reCAPTCHA",
+      error2: null,
+      siteKey: process.env.RECAPTCHA_SITE_KEY,
+    });
+  }
 
-if (!response.data.success) {
-  return res.render("register.ejs", {
-    email,
-    username,
-    error1: "reCAPTCHA verification failed",
-    error2: null,
-    siteKey: process.env.RECAPTCHA_SITE_KEY,
-  });
-}
+  const verifyURL =
+    `https://www.google.com/recaptcha/api/siteverify` +
+    `?secret=${process.env.RECAPTCHA_SECRET_KEY}` +
+    `&response=${captchaToken}`;
+
+  const response = await axios.post(verifyURL);
+
+  if (!response.data.success) {
+    return res.render("register.ejs", {
+      email,
+      username,
+      error1: "reCAPTCHA verification failed",
+      error2: null,
+      siteKey: process.env.RECAPTCHA_SITE_KEY,
+    });
+  }
   try {
-    console.log("BODY:", req.body);
-    console.log("HEADERS:", req.headers["content-type"]);
     const { username, email, password } = req.body;
     const existingUser = await User.findOne({ email });
 
@@ -72,7 +73,6 @@ if (!response.data.success) {
       });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const user = new User({
       username,
       email,
@@ -99,7 +99,6 @@ exports.getLogin = (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  
   const { email, password } = req.body;
   const captchaToken = req.body["g-recaptcha-response"];
 
@@ -160,40 +159,56 @@ exports.login = async (req, res) => {
     },
     process.env.REFRESH_TOKEN_SECRET,
   );
-  refreshTokens.push(refreshToken);
+  RefreshTokens.insertOne({refreshToken:refreshToken});
 
+  await user.save();
   res.json({
     accessToken,
     refreshToken,
   });
 };
 
-exports.refreshToken = (req, res) => {
-  const refreshToken = req.body.token;
+exports.refreshToken = async (req, res) => {
+  try {
+    const token = req.body.token;
 
-  if (refreshToken == null) return res.sendStatus(401);
+    if (!token) return res.sendStatus(401);
 
-  if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403);
-
-  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-
-    const accessToken = generateAccessToken({
-      username: user.username,
-      email: user.email,
+    const refreshToken  = await RefreshTokens.findOne({
+      refreshToken: token,
     });
 
-    res.json({ accessToken });
-  });
-};
+    if (!refreshToken) return res.sendStatus(403);
 
-exports.logout = (req, res) => {
-  const refreshToken = req.body.token;
-  const index = refreshTokens.indexOf(refreshToken);
+    jwt.verify(
+      token,
+      process.env.REFRESH_TOKEN_SECRET,
+      (err, payload) => {
+        if (err) return res.sendStatus(403);
 
-  if (index > -1) {
-    refreshTokens.splice(index, 1);
+        const accessToken = generateAccessToken({
+          username: payload.username,
+          email: payload.email,
+        });
+
+        res.json({
+          accessToken,
+        });
+      },
+    );
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
   }
-
-  res.sendStatus(204);
+};
+exports.logout = async (req, res) => {
+  try {
+    await RefreshTokens.deleteOne({refreshToken:req.body.token});
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
 };
