@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const Users = require("../models/Users");
 
 function authenticateAccessToken(req, res, next) {
   const authHeader = req.headers["authorization"];
@@ -9,12 +9,9 @@ function authenticateAccessToken(req, res, next) {
   if (!token) return res.sendStatus(401);
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
-    console.log("verify err:", err);
-    console.log("decoded user:", user);
     if (err) return res.sendStatus(403);
-    const result = await User.findOne({ username: user.username });
+    const result = await Users.findOne({ username: user.username });
     req.userId = result._id;
-    console.log(req);
     next();
   });
 }

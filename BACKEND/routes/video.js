@@ -8,6 +8,7 @@ const {
   getVideoByCategory,
   createVideo,
   deleteVideo,
+  reportVideo,
 
   addSubscriptions,
   deleteSubscriptions,
@@ -17,8 +18,8 @@ const {
   addComment,
   deleteComment,
   getAllCommentsByVideoId,
-
   editComment,
+  reportComment,
 
   getVideosLikesCount,
   getCommentsLikesCount,
@@ -37,6 +38,7 @@ router.get("/channel/:channelId", getVideoByChannelId);
 router.get("/channel/:channelId/subscribers", getAllSubscribersCount);
 router.get("/subscriptions", authenticateToken, getAllSubscriptions);
 router.get("/:videoId/comments", getAllCommentsByVideoId);
+router.post("/:videoId/report", authenticateToken, reportVideo);
 router.get("/:videoId/likes", getVideosLikesCount);
 router.get("/:videoId/comments/:commentId/likes", getCommentsLikesCount);
 router.get("/:category", getVideoByCategory);
@@ -47,6 +49,8 @@ router.post("/:videoId/comments/:commentId/likes/add", authenticateToken, addCom
 router.post("/channel/:channelId/subscribe/add", authenticateToken, addSubscriptions);
 
 router.patch("/:videoId/comments/:commentId/edit",authenticateToken,editComment);
+router.post("/:videoId/comments/:commentId/report",authenticateToken,reportComment);
+router.post("/:videoId/report",authenticateToken,reportVideo);
 
 router.delete("/channel/:channelId/subscribe/delete", authenticateToken ,deleteSubscriptions);
 router.delete("/:videoId/comments/:commentId/likes/delete", authenticateToken, deleteCommentLike);

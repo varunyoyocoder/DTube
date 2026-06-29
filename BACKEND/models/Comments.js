@@ -9,12 +9,21 @@ const commentsSchema = new mongoose.Schema(
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Users",
       required: true,
     },
     commentText: {
       type: String,
       required: true,
+    },
+    reportCount: {
+      type: Number,
+      default: 0,
+    },
+    status: {
+      type: String,
+      enum: ["active", "flagged", "removed"],
+      default: "active",
     },
   },
   {

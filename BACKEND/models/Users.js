@@ -20,11 +20,21 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    
+
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
+
+    isSuspended: {
+      type: Boolean,
+      default: false,
     },
 
     profileImage: {
@@ -37,4 +47,4 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("Users", userSchema);

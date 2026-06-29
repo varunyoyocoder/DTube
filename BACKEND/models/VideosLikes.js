@@ -5,17 +5,19 @@ const videosLikesSchema = new mongoose.Schema(
     videoId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "Video",
+      ref: "Videos",
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User",
+      ref: "Users",
     },
   },
   {
     timestamps: true,
   },
 );
+
+videosLikesSchema.index({ videoId: 1, userId: 1 }, { unique: true });
 
 module.exports = mongoose.model("VideosLikes", videosLikesSchema);

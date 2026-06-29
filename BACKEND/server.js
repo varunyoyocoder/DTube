@@ -1,47 +1,38 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-
+const cors = require("cors");
 const express = require("express");
 const app = express();
-
 const ejs = require('ejs');
 app.set("view engine", "ejs");
 
 const connectDB = require("./config/db");
 const authenticateToken = require("./middleware/authenticateaccessToken");
+const adminToken = require("./middleware/isAdmin");
 const authRoutes = require("./routes/auth");
 const videoRoutes = require("./routes/video");
-const forgotPasswordRoutes = require("./routes/forgotpassword");
-const resetPasswordRoutes = require("./routes/resetpassword");
+const passwordRoutes = require("./routes/password");
+const adminRoutes=require("./routes/admin");
+// const channelRoutes=require("./routes/channel");
 
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true,
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 connectDB();
+
 app.use("/auth", authRoutes);
 app.use("/videos", videoRoutes);
-app.use("/forgotpassword", forgotPasswordRoutes);
-app.use("/resetpassword", resetPasswordRoutes);
-
-
-const posts = [
-  { username: "Tharun", title: "post1" },
-  {
-    username: "Tharun",
-    title: "post2",
-  },
-  {
-    username: "varun",
-    title: "post3",
-  },
-];
+app.use("/password", passwordRoutes);
+app.use("/admin",authenticateToken,adminToken,adminRoutes);
+// app.use("/channel",authenticateToken,channelRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server working");
-});
-
-app.get("/posts", authenticateToken, (req, res) => {
-  res.json(posts.filter((post) => post.username === req.user.username));
 });
 
 app.listen(3000, () => {

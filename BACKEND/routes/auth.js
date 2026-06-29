@@ -10,12 +10,11 @@ const {
   logout,
 } = require("../controllers/authController");
 
-router.get("/register", getRegister);
-router.post("/register", register);
 
-router.get("/login", getLogin);
+router.post("/register", register);
 router.post("/login", login);
 router.post("/token", refreshToken);
-router.delete("/logout", logout);
+
+router.post("/logout", logout);
 
 module.exports = router;

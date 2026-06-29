@@ -1,64 +1,49 @@
-const User = require("../models/User");
+const Users = require("../models/Users");
 
-const { generateOTP, canRequestOTP, otpcache,otpExpiry } = require("../utils/otp");
+const {
+  generateOTP,
+  canRequestOTP,
+  otpcache,
+  otpExpiry,
+} = require("../utils/otp");
 
 const sendOTPEmail = require("../utils/email");
-
-
-exports.getForgotPassword = (req, res) => {
-  res.render("forgotpassword.ejs", {
-    error: null,
-    showOTP: false,
-    email: "",
-    siteKey: process.env.RECAPTCHA_SITE_KEY,
-
-  });
-};
 
 exports.requestOTP = async (req, res) => {
   const email = req.body.email;
 
-  const user = await User.findOne({ email });
+  const user = await Users.findOne({ email });
 
   if (!user) {
-    return res.render("forgotpassword.ejs", {
+    return res.status(404).json({
       error: "Email not found",
-      showOTP: false,
-      email:null,
     });
   }
 
   if (!canRequestOTP(email)) {
-    return res.render("forgotpassword.ejs", {
+    return res.status(429).json({
       error: "Daily OTP limit exceeded",
-      showOTP: false,
-      email:null,
     });
   }
 
   const otp = generateOTP(email);
 
-  sendOTPEmail(email, otp,otpExpiry);
-
-  res.render("forgotpassword.ejs", {
-    error: null,
-    showOTP: true,
-    email,
-  });
+  sendOTPEmail(email, otp, otpExpiry);
 };
 
 exports.verifyOTP = (req, res) => {
   const { email, otp } = req.body;
+  console.log("Email:", email);
+  console.log("OTP from React:", otp);
+  console.log("OTP in cache:", otpcache[email]);
 
   if (otpcache[email] !== otp) {
-    return res.render("forgotpassword.ejs", {
-      error: "Invalid OTP",
-      showOTP: false,
-      email,
+    return res.status(401).json({
+      error: "Invalid otp",
     });
   }
-
   delete otpcache[email];
-
-  res.redirect(`/resetpassword?email=${email}`);
+  return res.status(200).json({
+    message: "OTP verified",
+  });
 };

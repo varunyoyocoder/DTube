@@ -26,23 +26,34 @@ const videosSchema = new mongoose.Schema(
 
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Users",
       required: true,
     },
 
     views: {
-      type: Number, 
+      type: Number,
       default: 0,
     },
-    
+
     category: {
       type: String,
       default: "",
     },
+
+    status: {
+      type: String,
+      enum: ["active", "flagged", "removed"],
+      default: "active",
+    },
+    reportCount: {
+  type: Number,
+  default: 0
+},
   },
   {
     timestamps: true,
   },
 );
 
+videosSchema.index({views: -1,});
 module.exports = mongoose.model("Videos", videosSchema);

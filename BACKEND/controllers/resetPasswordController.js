@@ -1,42 +1,32 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const User = require("../models/User");
+const Users = require("../models/Users");
 const strongPassword = require("../utils/password");
 
-exports.getResetPassword = (req, res) => {
-  res.render("resetpassword.ejs", {
-    email: req.query.email,
-    error1: null,
-    error2: null,
-  });
-};
-
 exports.resetPassword = async (req, res) => {
-  const { email, newpassword, confirmedpassword } = req.body;
+  const { email, newpassword, confirmpassword } = req.body;
 
   if (!strongPassword(newpassword)) {
-    return res.render("resetpassword.ejs", {
-      email,
-      error1: "weak password",
-      error2: null,
-    });
+   return res.status(400).json({
+        error: "Weak password",
+      });
   }
 
-  if (newpassword !== confirmedpassword) {
-    return res.render("resetpassword.ejs", {
-      email,
-      error1: null,
-      error2: "passwords do not match",
-    });
+  if (newpassword !== confirmpassword) {
+   return res.status(400).json({
+    error: "Passwords do not match",
+  });
   }
 
-  const user = await User.findOne({ email });
+  const user = await Users.findOne({ email });
 
   user.password = await bcrypt.hash(newpassword, 10);
 
   await user.save();
+   return res.status(200).json({
+    message: "Password changed",
+  });
 
-  res.redirect("/auth/login");
 };
 

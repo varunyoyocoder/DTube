@@ -1,8 +1,6 @@
 const nodemailer = require("nodemailer");
 
-
 function sendOTPEmail(email, otp,otpExpiry) {
-  // Implement your email sending logic here using a service like nodemailer, SendGrid, etc.
   console.log(`Sending OTP ${otp} to email: ${email}`);
   const mailOptions = {
     from: "dtubeadmin@gmail.com",
@@ -10,7 +8,6 @@ function sendOTPEmail(email, otp,otpExpiry) {
     subject: "Your OTP for Password Reset",
     text: `Your OTP for password reset is: ${otp}. It will expire in ${otpExpiry/60} minutes.`,
   };
-  console.log(process.env.EMAIL_PASSWORD);
   let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -39,7 +36,6 @@ function sendOTPEmail(email, otp,otpExpiry) {
     } else {
       console.log("EMAIL SENT:");
       console.log(info.response);
-      
     }
   });
 }

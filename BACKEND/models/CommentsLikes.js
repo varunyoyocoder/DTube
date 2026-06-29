@@ -9,7 +9,7 @@ const commentsLikesSchema = new mongoose.Schema(
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Users",
       required: true,
     },
      videoId: {
@@ -23,5 +23,6 @@ const commentsLikesSchema = new mongoose.Schema(
   },
 );
 
+commentsLikesSchema.index({ commentId: 1, userId: 1 }, { unique: true });
 module.exports = mongoose.model("CommentsLikes", commentsLikesSchema);
 

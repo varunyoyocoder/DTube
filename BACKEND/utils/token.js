@@ -10,4 +10,14 @@ function generateAccessToken(user) {
   );
 }
 
+function generateRefreshToken(user) {
+  return jwt.sign(
+    user,
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+       expiresIn: "7d"
+    }
+  );
+}
+
 module.exports = generateAccessToken;

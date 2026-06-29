@@ -4,12 +4,12 @@ const subscribersSchema = new mongoose.Schema(
   {
     channelId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Users",
       required: true,
     },
     subscriberId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Users",
     },
   },
   {
@@ -17,4 +17,6 @@ const subscribersSchema = new mongoose.Schema(
   },
 );
 
+
+subscribersSchema.index({ channelId: 1, subscriberId: 1 }, { unique: true });
 module.exports = mongoose.model("Subscribers", subscribersSchema);
