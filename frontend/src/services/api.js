@@ -5,44 +5,58 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const accesToken = localStorage.getItem("accessToken");
+  if (
+  config.url !== "/auth/login" &&
+  config.url !== "/auth/register"
+) {
+  const accessToken = localStorage.getItem("accessToken");
 
-  if (accesToken) {
-    config.headers.Authorization = `Bearer ${accesToken}`;
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
+}
 
   return config;
 });
 
 
-// api.interceptors.response.use(
-//   (response) => response,
-//   async (errorRequest) => {
-//     if (request.response?.status === 401) {
-//       try {
-//         const response = await axios.post("http://localhost:3000/auth/token", {
-//           refreshToken,
-//         });
+api.interceptors.response.use(
+  (response) => response,
+  async (errorRequest) => {
+    if (
+  errorRequest.config.url === "/auth/login" ||
+  errorRequest.config.url === "/auth/token"
+) {
+  return Promise.reject(errorRequest);
+}
+    if (errorRequest.response?.status === 401) {
+      try {
+        const refreshToken = localStorage.getItem("refreshToken");
+        console.log("accesToken invalid,creating new token");
+        const response = await axios.post("http://localhost:3000/auth/token", {
+          refreshToken,
+        });
 
-//         localStorage.setItem("accessToken", response.data.accessToken);
+        localStorage.setItem("accessToken", response.data.accessToken);
 
-//         errorRequest.config.headers.Authorization = `Bearer ${response.data.accessToken}`;
+        errorRequest.config.headers.Authorization = `Bearer ${response.data.accessToken}`;
 
-//         return api(errorRequest.config);
-//       } catch (err) {
-//         if (err.response?.status === 401 || err.response?.status === 403) {
-//           // Refresh token is invalid or expired
+        return api(errorRequest.config);
+      } catch (err) {
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          alert("You have been logged out due to inactivity");
 
-//           localStorage.removeItem("accessToken");
-//           localStorage.removeItem("refreshToken");
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
 
-//           window.location.href = "/login";
-//         }
-//       }
-//     }
-//     return Promise.reject(request);
-//   },
-// );
+          window.location.href = "/login";
+        }
+      }
+    }
+
+    return Promise.reject(errorRequest);
+  },
+);
 
 export default api;
 

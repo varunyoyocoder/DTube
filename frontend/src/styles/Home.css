@@ -113,6 +113,9 @@ body{
 
     background:#ff5555;
 }
+
+
+
 .user-profile {
     display: flex;
     align-items: center;
@@ -141,6 +144,10 @@ body{
     background: transparent;
     border: none;
     cursor: pointer;
+}
+
+.user-name{
+ color :#06a320
 }
 
 .profile-menu {

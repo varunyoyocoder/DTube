@@ -166,7 +166,7 @@ exports.logout = async (req, res) => {
       refreshToken: req.body.refreshToken,
     });
 
-    return res.status(200).json({
+    return res.send(200).json({
       message: "Logged out successfully",
     });
   } catch (err) {

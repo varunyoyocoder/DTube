@@ -64,7 +64,7 @@ function Home() {
                 onClick={() => setShowMenu(!showMenu)}
               >
                 <img src={profileImage} alt="Profile" className="profile-pic" />
-                <span>{username}</span>
+                <span className="user-name">{username}</span>
               </button>
 
               {showMenu && (

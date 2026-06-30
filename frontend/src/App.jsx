@@ -5,7 +5,7 @@ import Register from "./pages/Register";
 import Forgot from "./pages/Forgot"
 import Reset from "./pages/Reset";
 import Home from "./pages/Home";
-// import Profile from "./pages/Profile"
+import Profile from "./pages/Profile"
 
 function App() {
   return (
@@ -16,7 +16,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/password/forgot" element={<Forgot />} />
       <Route path="/password/reset" element={<Reset />} />
-      {/* <Route path="/profile" element={<Profile />} /> */}
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 }

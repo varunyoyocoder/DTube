@@ -1,16 +1,19 @@
-// const express = require("express");
-// const router = express.Router();
+const express = require("express");
+const router = express.Router();
+const upload = require("../middleware/upload");
 
-// const {
-// changeProfilePicture,
-//   createVideo,
-//   deleteVideo,
-// } = require("../controllers/channelController");
-
-
-// router.patch("/profilePicture", changeProfilePicture);
-// router.post("/createVideo", createVideo);
-// router.post("/deleteVideo", deleteVideo);
+const {
+changeProfilePicture,
+removeProfilePicture,
+  createVideo,
+  deleteVideo,
+} = require("../controllers/channelController");
 
 
-// module.exports = router;
+router.patch("/changeProfilePicture",upload.single("profileImage"), changeProfilePicture);
+router.patch("/removeProfilePicture",removeProfilePicture);
+router.post("/createVideo", createVideo);
+router.post("/deleteVideo", deleteVideo);
+
+
+module.exports = router;

@@ -1,94 +1,154 @@
-// const Users = require("../models/Users");
-// const Videos = require("../models/Videos");
-// const Comments = require("../models/Comments");
-// const VideosLikes = require("../models/VideosLikes");
-// const CommentsLikes = require("../models/CommentsLikes");
-// const Reports = require("../models/Reports");
-// const updateModeration = require("../utils/updateModeration");
+const Users = require("../models/Users");
+const Videos = require("../models/Videos");
+const Comments = require("../models/Comments");
+const VideosLikes = require("../models/VideosLikes");
+const CommentsLikes = require("../models/CommentsLikes");
+const Reports = require("../models/Reports");
+const updateModeration = require("../utils/updateModeration");
+const uploadToS3 = require("../utils/uploadToS3");
+const deleteFromS3 = require("../utils/deleteFromS3");
+const getS3Url = require("../utils/getS3Url");
 
-// //videos
+exports.changeProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        error: "No image uploaded",
+      });
+    }
+    const user = await Users.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+    if (user.profileImage) {
+      console.log(user.profileImage);
+      await deleteFromS3(user.profileImage);
+    }
+    const newProfileImageKey = await uploadToS3(req.file, "profilePictures");
+    user.profileImage = newProfileImageKey;
+    await user.save();
+    res.json({
+      message: "Profile picture updated",
+      profileImage: getS3Url(newProfileImageKey),
+      profileImageKey:newProfileImageKey,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+};
+exports.removeProfilePicture = async (req, res) => {
+  try {
+    const user = await Users.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+    if(!user.profileImage){
+      return res.json({
+      message: "No profile image present",
+    });
+    }
+    if (user.profileImage) {
+      console.log(user.profileImage);
+      await deleteFromS3(user.profileImage);
+    }
+    user.profileImage = "";
+    await user.save();
+    res.json({
+      message: "Profile picture removed",
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+};
 
-// exports.changeProfilePicture = async (req, res) => {
-//   console.log("In change profile");
-//   const { profileImage } = req.file.path;
-//   console.log(profileImage);
-//   if (!profileImage) {
-//     return res.status(400).json({
-//       error: "Profile image is required",
-//     });
-//   }
-//   try {
-//     const user = await Users.findByIdAndUpdate(
-//       req.userId,
-//       {
-//         profileImage: profileImage,
-//       },
-//       {
-//         new: true,
-//       },
-//     );
+exports.createVideo = async (req, res) => {
+  try {
+    const { title, description, category } = req.body;
+    if (!req.files || !req.files.thumbnail || !req.files.video) {
+      return res.status(400).json({
+        error: "Thumbnail and video required",
+      });
+    }
+    const thumbnailUrl = await uploadToS3(req.files.thumbnail[0], "thumbnails");
+    const videoUrl = await uploadToS3(req.files.video[0], "videos");
+    const video = await Videos.create({
+      title,
+      description,
+      category,
+      thumbnailUrl,
+      videoUrl,
+      ownerId: req.userId,
+    });
+    res.status(201).json({
+      message: "Video created",
+      video,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+};
 
-//     if (!user) {
-//       return res.status(404).json({
-//         error: "User not found",
-//       });
-//     }
+exports.deleteVideo = async (req, res) => {
+  try {
+    const video = await Videos.findById(req.params.videoId);
 
-//     res.status(200).json({
-//       message: "Profile picture updated",
-//       profileImage: user.profileImage,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       error: err.message,
-//     });
-//   }
-// };
+    if (!video) {
+      return res.status(404).json({
+        error: "Video not found",
+      });
+    }
 
-// exports.createVideo = async (req, res) => {
-//   const { title, description, category, thumbnailUrl, videoUrl } = req.body;
-//   try {
-//     const video = await Videos.create({
-//       title: title,
-//       description: description,
-//       category: category,
-//       thumbnailUrl: thumbnailUrl,
-//       videoUrl: videoUrl,
-//       ownerId: req.userId,
-//     });
-//     res.status(200).json({ message: "Video created" });
-//   } catch (err) {
-//     res.status(500).json({
-//       error: err.message,
-//     });
-//   }
-// };
+    if (!video.ownerId.equals(req.userId)) {
+      return res.status(403).json({
+        error: "Unauthorized",
+      });
+    }
 
-// exports.deleteVideo = async (req, res) => {
-//   const videoId = req.params.videoId;
-//   console.log("deleteVideo");
+    // Delete thumbnail from S3
+    if (video.thumbnailUrl) {
+      await deleteFromS3(getKeyFromUrl(video.thumbnailUrl));
+    }
 
-//   try {
-//     const videoAvailable = await Videos.findOne({ _id: videoId });
-//     if (!videoAvailable)
-//       return res.status(404).json({ error: "Video not found" });
-//     if (!videoAvailable.ownerId.equals(req.userId)) {
-//       return res
-//         .status(403)
-//         .json({ error: "Cannot delete other users videos" });
-//     }
-//     await Videos.deleteOne({ _id: videoId });
-//     await Comments.deleteMany({ videoId: videoId });
-//     await CommentsLikes.deleteMany({ videoId: videoId });
-//     await VideosLikes.deleteMany({ videoId: videoId });
-//     await Reports.deleteMany({
-//       targetType: "video",
-//       targetId: videoId,
-//     });
-//     res.status(200).json({ message: "Video deleted" });
-//   } catch (err) {
-//     res.status(500).json({
-//       error: err.message,
-//     });
-//   }
-// };
+    // Delete video from S3
+    if (video.videoUrl) {
+      await deleteFromS3(getKeyFromUrl(video.videoUrl));
+    }
+
+    await Comments.deleteMany({
+      videoId: video._id,
+    });
+
+    await CommentsLikes.deleteMany({
+      videoId: video._id,
+    });
+
+    await VideosLikes.deleteMany({
+      videoId: video._id,
+    });
+
+    await Reports.deleteMany({
+      targetType: "video",
+      targetId: video._id,
+    });
+
+    await Videos.findByIdAndDelete(video._id);
+
+    res.json({
+      message: "Video deleted",
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+};
