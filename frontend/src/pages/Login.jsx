@@ -38,8 +38,12 @@ function Login() {
 
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("username", response.data.username);
-      localStorage.setItem("profileImage", response.data.profileImage || "");
+      localStorage.setItem("userId", response.data.userId);
+      if (response.data.profileImage)
+        localStorage.setItem("profileImage", response.data.profileImage);
       localStorage.setItem("refreshToken", response.data.refreshToken);
+      console.log(response.data.refreshToken);
+      console.log(response.data.accessToken);
 
       alert("Login Successful");
       navigate("/home");

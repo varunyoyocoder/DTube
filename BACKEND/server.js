@@ -4,8 +4,6 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 const express = require("express");
 const app = express();
-const ejs = require('ejs');
-app.set("view engine", "ejs");
 
 const connectDB = require("./config/db");
 

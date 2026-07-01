@@ -2,12 +2,30 @@ import "../styles/Profile.css";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/dtube-logo.png";
 import defaultUser from "../assets/user.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../services/api";
+import Album from "./Album";
+import { Button } from "react-bootstrap";
 
 function Me() {
   const loggedIn = !!localStorage.getItem("accessToken");
   const username = localStorage.getItem("username");
+  const [videos, setVideos] = useState(null);
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const response = await api.get(
+          "/videos/channel/" + localStorage.getItem("userId"),
+        );
+        console.log("Fetched videos:", response.data);
+        setVideos(response.data);
+      } catch (err) {
+        console.error("Failed to fetch videos:", err);
+      }
+    };
+
+    fetchVideos();
+  }, []);
 
   const navigate = useNavigate();
 
@@ -38,12 +56,11 @@ function Me() {
         },
       );
 
-      const imageUrl = response.data.profileImage;
+      const imageURL = response.data.profileImageURL;
 
-      localStorage.setItem("profileImage", imageUrl);
-
-      setProfileImage(imageUrl);
-
+      localStorage.setItem("profileImage", imageURL);
+      setProfileImage(imageURL);
+      
       alert(response.data.message);
     } catch (err) {
       console.log(err.response || err);
@@ -56,6 +73,15 @@ function Me() {
       const response = await api.patch("/channel/removeProfilePicture");
       localStorage.removeItem("profileImage");
       setProfileImage(defaultUser);
+      alert(response.data.message);
+    } catch (err) {
+      console.log(err.response || err);
+    }
+  };
+
+  const createVideo = async (e) => {
+    try {
+      const response = await api.post("/channel/createVideo");
       alert(response.data.message);
     } catch (err) {
       console.log(err.response || err);
@@ -101,7 +127,6 @@ function Me() {
 
         <main
           style={{
-            marginLeft: "260px",
             padding: "40px",
             color: "white",
           }}
@@ -149,6 +174,10 @@ function Me() {
             </button>
             <button onClick={removeProfile}>Remove Profile Picture</button>
           </div>
+          <Album cardsArray={videos} />
+          <Link to="/create-video">
+            <Button variant="outline-secondary">Create</Button>
+          </Link>
         </main>
       </div>
     </div>

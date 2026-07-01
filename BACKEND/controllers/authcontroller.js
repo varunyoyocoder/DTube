@@ -86,6 +86,7 @@ exports.login = async (req, res) => {
     });
   }
   const user = await Users.findOne({ email });
+  console.log(user);
 
   if (!user) {
     return res.status(404).json({
@@ -113,13 +114,14 @@ exports.login = async (req, res) => {
   await RefreshTokens.create({
     refreshToken,
   });
+  
 
   res.json({
     accessToken,
     refreshToken,
     userId: user._id,
     username: user.username,
-    profileImage: user.profileImage,
+    profileImage:user.profileImageURL,
   });
 };
 

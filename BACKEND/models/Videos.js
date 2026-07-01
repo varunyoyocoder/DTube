@@ -14,12 +14,12 @@ const videosSchema = new mongoose.Schema(
       trim: true,
     },
 
-    videoUrl: {
+    videoURL: {
       type: String,
       required: true,
     },
 
-    thumbnailUrl: {
+    thumbnailURL: {
       type: String,
       required: true,
     },
@@ -46,14 +46,14 @@ const videosSchema = new mongoose.Schema(
       default: "active",
     },
     reportCount: {
-  type: Number,
-  default: 0
-},
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-videosSchema.index({views: -1,});
+videosSchema.index({ views: -1 });
 module.exports = mongoose.model("Videos", videosSchema);

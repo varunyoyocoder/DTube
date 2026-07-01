@@ -4,7 +4,7 @@ const Comments = require("../models/Comments");
 const VideosLikes = require("../models/VideosLikes");
 const CommentsLikes = require("../models/CommentsLikes");
 const Subscribers = require("../models/Subscribers");
-const Reports=require("../models/Reports");
+const Reports = require("../models/Reports");
 const updateModeration = require("../utils/updateModeration");
 
 //videos
@@ -53,14 +53,14 @@ exports.getVideoByCategory = async (req, res) => {
 };
 
 exports.createVideo = async (req, res) => {
-  const { title, description, category, thumbnailUrl, videoUrl } = req.body;
+  const { title, description, category, thumbnailURL, videoURL } = req.body;
   try {
     const video = await Videos.create({
       title: title,
       description: description,
       category: category,
-      thumbnailUrl: thumbnailUrl,
-      videoUrl: videoUrl,
+      thumbnailURL: thumbnailURL,
+      videoURL: videoURL,
       ownerId: req.userId,
     });
     res.status(201).json(video);
@@ -87,9 +87,9 @@ exports.deleteVideo = async (req, res) => {
     await CommentsLikes.deleteMany({ videoId: videoId });
     await VideosLikes.deleteMany({ videoId: videoId });
     await Reports.deleteMany({
-    targetType: "video",
-    targetId: videoId,
-});
+      targetType: "video",
+      targetId: videoId,
+    });
     res.sendStatus(204);
   } catch (err) {
     res.status(500).json({
@@ -152,9 +152,9 @@ exports.deleteComment = async (req, res) => {
     await Comments.deleteOne({ _id: commentId });
     await CommentsLikes.deleteMany({ commentId: commentId });
     await Reports.deleteMany({
-    targetType: "comment",
-    targetId: commentId,
-});
+      targetType: "comment",
+      targetId: commentId,
+    });
     res.sendStatus(204);
   } catch (err) {
     res.status(500).json({
@@ -466,67 +466,66 @@ exports.getCommentsLikesCount = async (req, res) => {
 };
 //report
 
-exports.reportVideo=async (req,res)=>{
-  const videoId=req.params.videoId;
-  const {reason}=req.body;
+exports.reportVideo = async (req, res) => {
+  const videoId = req.params.videoId;
+  const { reason } = req.body;
   try {
-    const video =await Videos.findById(videoId);
-    if (!video){
+    const video = await Videos.findById(videoId);
+    if (!video) {
       return res.status(404).json({
         error: "Video not found",
       });
     }
     if (video.status === "removed") {
-  return res.status(400).json({
-    error: "Video has already been removed",
-  });
-}
-    const targetId= video.ownerId
-    const reports =await Reports.create({
-      reason:reason,
-      targetId:targetId,
-      targetContentId:videoId,
-      targetType:"video",
-      reporterId:req.userId,
-    })
-     await updateModeration("video",videoId)
+      return res.status(400).json({
+        error: "Video has already been removed",
+      });
+    }
+    const targetId = video.ownerId;
+    const reports = await Reports.create({
+      reason: reason,
+      targetId: targetId,
+      targetContentId: videoId,
+      targetType: "video",
+      reporterId: req.userId,
+    });
+    await updateModeration("video", videoId);
     res.status(201).json(reports);
-    
   } catch (err) {
     res.status(500).json({
       error: err.message,
     });
   }
-}
-exports.reportComment=async (req,res)=>{
-  const commentId=req.params.commentId;
-  const {reason}=req.body;
+};
+exports.reportComment = async (req, res) => {
+  const commentId = req.params.commentId;
+  const { reason } = req.body;
   try {
-    const comment =await Comments.findById(commentId);
+    const comment = await Comments.findById(commentId);
     if (!comment) {
       return res.status(404).json({
         error: "Comment not found",
       });
     }
 
-if (comment.status === "removed") {
-  return res.status(400).json({
-    error: "Comment has already been removed",
-  });
-}
-    const targetId= comment.userId
-    const reports =await Reports.create({
-      reason:reason,
-      targetId:targetId,
-      targetContentId:commentId,
-      targetType:"comment",
-      reporterId:req.userId,
-    })
-    await updateModeration("comment",commentId)
+    if (comment.status === "removed") {
+      return res.status(400).json({
+        error: "Comment has already been removed",
+      });
+    }
+    const targetId = comment.userId;
+    const reports = await Reports.create({
+      reason: reason,
+      targetId: targetId,
+      targetContentId: commentId,
+      targetType: "comment",
+      reporterId: req.userId,
+    });
+    await updateModeration("comment", commentId);
     res.status(201).json(reports);
   } catch (err) {
     res.status(500).json({
       error: err.message,
     });
   }
-}
+};

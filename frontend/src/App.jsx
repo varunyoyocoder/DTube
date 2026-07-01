@@ -6,6 +6,7 @@ import Forgot from "./pages/Forgot"
 import Reset from "./pages/Reset";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile"
+import CreateVideo from "./pages/CreateVideo";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/password/forgot" element={<Forgot />} />
       <Route path="/password/reset" element={<Reset />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/create-video" element={<CreateVideo />} />
     </Routes>
   );
 }

@@ -1,138 +1,101 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function CreateVideo() {
+  const [title, setTitle] = useState("");
 
-    const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
-    const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
 
-    const [category, setCategory] = useState("");
+  const [thumbnail, setThumbnail] = useState(null);
 
-    const [thumbnail, setThumbnail] = useState(null);
+  const [video, setVideo] = useState(null);
+    const navigate = useNavigate();
 
-    const [video, setVideo] = useState(null);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const handleSubmit = async (e) => {
+    if (!thumbnail || !video) {
+      alert("Choose both thumbnail and video.");
+      return;
+    }
 
-        e.preventDefault();
+    const formData = new FormData();
 
-        if (!thumbnail || !video) {
-            alert("Choose both thumbnail and video.");
-            return;
-        }
+    formData.append("title", title);
 
-        const formData = new FormData();
+    formData.append("description", description);
 
-        formData.append("title", title);
+    formData.append("category", category);
 
-        formData.append("description", description);
+    formData.append("thumbnail", thumbnail);
 
-        formData.append("category", category);
+    formData.append("video", video);
 
-        formData.append("thumbnail", thumbnail);
+    try {
+      const response = await api.post("/channel/createVideo", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-        formData.append("video", video);
+      alert(response.data.message);
+      navigate("/profile", {
+        state: response.data
+      });
+    } catch (err) {
+      console.log(err);
 
-        try {
+      alert("Upload failed");
+    }
+  };
 
-            const response = await api.post(
-                "/user/createVideo",
-                formData,
-                {
-                    headers: {
-                        "Content-Type":
-                            "multipart/form-data",
-                    },
-                }
-            );
-
-            alert(response.data.message);
-
-            setTitle("");
-
-            setDescription("");
-
-            setCategory("");
-
-            setThumbnail(null);
-
-            setVideo(null);
-
-        } catch (err) {
-
-            console.log(err);
-
-            alert("Upload failed");
-
-        }
-
-    };
-
-    return (
-
-        <form onSubmit={handleSubmit}>
-
-            <input
-                type="text"
-                placeholder="Title"
-                value={title}
-                onChange={(e)=>setTitle(e.target.value)}
-            />
-
-            <br /><br />
-
-            <textarea
-                placeholder="Description"
-                value={description}
-                onChange={(e)=>setDescription(e.target.value)}
-            />
-
-            <br /><br />
-
-            <input
-                type="text"
-                placeholder="Category"
-                value={category}
-                onChange={(e)=>setCategory(e.target.value)}
-            />
-
-            <br /><br />
-
-            Thumbnail
-
-            <input
-                type="file"
-                accept="image/*"
-                onChange={(e)=>
-                    setThumbnail(e.target.files[0])
-                }
-            />
-
-            <br /><br />
-
-            Video
-
-            <input
-                type="file"
-                accept="video/*"
-                onChange={(e)=>
-                    setVideo(e.target.files[0])
-                }
-            />
-
-            <br /><br />
-
-            <button type="submit">
-
-                Upload Video
-
-            </button>
-
-        </form>
-
-    );
-
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <br />
+      <br />
+      <textarea
+        placeholder="Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      <br />
+      <br />
+      <input
+        type="text"
+        placeholder="Category"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+      />
+      <br />
+      <br />
+      Thumbnail
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setThumbnail(e.target.files[0])}
+      />
+      <br />
+      <br />
+      Video
+      <input
+        type="file"
+        accept="video/*"
+        onChange={(e) => setVideo(e.target.files[0])}
+      />
+      <br />
+      <br />
+      <button type="submit">Upload Video</button>
+    </form>
+  );
 }
 
 export default CreateVideo;

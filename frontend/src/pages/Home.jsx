@@ -2,30 +2,33 @@ import "../styles/Home.css";
 import { Link } from "react-router-dom";
 import logo from "../assets/dtube-logo.png";
 import defaultUser from "../assets/user.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import Album from "./Album";
 
 function Home() {
   const loggedIn = !!localStorage.getItem("accessToken");
   const username = localStorage.getItem("username");
-  const storedProfileImage = localStorage.getItem("profileImage");
-  const refreshToken = localStorage.getItem("refreshToken");
-
   const navigate = useNavigate();
-
   const [showMenu, setShowMenu] = useState(false);
 
-  const profileImage =
-    storedProfileImage && storedProfileImage.trim() !== ""
-      ? storedProfileImage
-      : defaultUser;
+  const [profileImage, setProfileImage] = useState(defaultUser);
+  
+  useEffect(() => {
+    const storedProfileImage = localStorage.getItem("profileImage");
+    if (storedProfileImage) {
+      setProfileImage(storedProfileImage);
+    }
+    else 
+      setProfileImage(defaultUser);
+  }, []);
 
   const handleLogout = async (e) => {
+    const refreshToken = localStorage.getItem("refreshToken");
     e.preventDefault();
     setShowMenu(false);
     try {
-      console.log(refreshToken);
       const response = await api.post("/auth/logout", {
         refreshToken: refreshToken,
       });
@@ -93,7 +96,9 @@ function Home() {
 
         <aside className="sidebar">
           <ul>
-            <li>🏠 Home</li>
+            <Link to="/">
+              <li>🏠 Home</li>
+            </Link>
             <li>📺 Subscriptions</li>
             <li>🔥 Trending</li>
             <li>🕘 History</li>
@@ -103,6 +108,7 @@ function Home() {
         </aside>
 
         {/* Main */}
+        {/* <Album /> */}
       </div>
     </div>
   );

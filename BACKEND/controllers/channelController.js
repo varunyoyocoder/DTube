@@ -7,9 +7,10 @@ const Reports = require("../models/Reports");
 const updateModeration = require("../utils/updateModeration");
 const uploadToS3 = require("../utils/uploadToS3");
 const deleteFromS3 = require("../utils/deleteFromS3");
-const getS3Url = require("../utils/getS3Url");
+const keyFromURL = require("../utils/getKeyFromURL");
 
 exports.changeProfilePicture = async (req, res) => {
+  console.log("Received request to change profile picture");
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -22,17 +23,16 @@ exports.changeProfilePicture = async (req, res) => {
         error: "User not found",
       });
     }
-    if (user.profileImage) {
-      console.log(user.profileImage);
-      await deleteFromS3(user.profileImage);
+    if (user.profileImageURL) {
+      await deleteFromS3(keyFromURL(user.profileImageURL));
     }
-    const newProfileImageKey = await uploadToS3(req.file, "profilePictures");
-    user.profileImage = newProfileImageKey;
+    const newprofileImageURL = await uploadToS3(req.file, "profilePictures");
+    user.profileImageURL = newprofileImageURL;
+    console.log("New profile image URL:", newprofileImageURL);
     await user.save();
     res.json({
       message: "Profile picture updated",
-      profileImage: getS3Url(newProfileImageKey),
-      profileImageKey:newProfileImageKey,
+      profileImageURL: newprofileImageURL,
     });
   } catch (err) {
     res.status(500).json({
@@ -40,6 +40,7 @@ exports.changeProfilePicture = async (req, res) => {
     });
   }
 };
+
 exports.removeProfilePicture = async (req, res) => {
   try {
     const user = await Users.findById(req.userId);
@@ -48,16 +49,16 @@ exports.removeProfilePicture = async (req, res) => {
         error: "User not found",
       });
     }
-    if(!user.profileImage){
+    if (!user.profileImageURL) {
       return res.json({
-      message: "No profile image present",
-    });
+        message: "No profile image present",
+      });
     }
-    if (user.profileImage) {
-      console.log(user.profileImage);
-      await deleteFromS3(user.profileImage);
+    if (user.profileImageURL) {
+      console.log(keyFromURL(user.profileImageURL));
+      await deleteFromS3(keyFromURL(user.profileImageURL));
     }
-    user.profileImage = "";
+    user.profileImageURL = "";
     await user.save();
     res.json({
       message: "Profile picture removed",
@@ -77,19 +78,19 @@ exports.createVideo = async (req, res) => {
         error: "Thumbnail and video required",
       });
     }
-    const thumbnailUrl = await uploadToS3(req.files.thumbnail[0], "thumbnails");
-    const videoUrl = await uploadToS3(req.files.video[0], "videos");
+    const thumbnailURL = await uploadToS3(req.files.thumbnail[0], "thumbnails");
+    const videoURL = await uploadToS3(req.files.video[0], "videos");
     const video = await Videos.create({
-      title,
-      description,
-      category,
-      thumbnailUrl,
-      videoUrl,
+      title: title,
+      description: description,
+      category: category,
+      thumbnailURL: thumbnailURL,
+      videoURL: videoURL,
       ownerId: req.userId,
     });
     res.status(201).json({
       message: "Video created",
-      video,
+      video: video,
     });
   } catch (err) {
     res.status(500).json({
@@ -114,14 +115,12 @@ exports.deleteVideo = async (req, res) => {
       });
     }
 
-    // Delete thumbnail from S3
-    if (video.thumbnailUrl) {
-      await deleteFromS3(getKeyFromUrl(video.thumbnailUrl));
+    if (video.thumbnailURL) {
+      await deleteFromS3(keyFromURL(video.thumbnailURL));
     }
 
-    // Delete video from S3
-    if (video.videoUrl) {
-      await deleteFromS3(getKeyFromUrl(video.videoUrl));
+    if (video.videoURL) {
+      await deleteFromS3(keyFromURL(video.videoURL));
     }
 
     await Comments.deleteMany({
