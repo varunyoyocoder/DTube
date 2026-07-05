@@ -1,0 +1,26 @@
+.page-content {
+  display: flex;
+  background: var(--bg, #0a1710);
+  min-height: 100vh;
+  padding-top: var(--navbar-h, 72px); 
+}
+.page-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--sidebar-w, 224px);
+  padding: 32px;
+  background: var(--bg, #0a1710);
+  overflow-x: hidden;
+}
+@media (max-width: 900px) {
+  .page-main {
+    margin-left: var(--sidebar-w-collapsed, 76px);
+    padding: 24px;
+  }
+}
+@media (max-width: 650px) {
+  .page-main {
+    margin-left: 0;
+    padding: 16px;
+  }
+}

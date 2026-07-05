@@ -39,14 +39,17 @@ function Login() {
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("username", response.data.username);
       localStorage.setItem("userId", response.data.userId);
+      localStorage.setItem("userRole", response.data.userRole);
       if (response.data.profileImage)
         localStorage.setItem("profileImage", response.data.profileImage);
       localStorage.setItem("refreshToken", response.data.refreshToken);
       console.log(response.data.refreshToken);
       console.log(response.data.accessToken);
-
       alert("Login Successful");
-      navigate("/home");
+      // if (response.data.userRole === "admin") navigate("/admin");
+      // else {
+        navigate("/home");
+      // }
     } catch (err) {
       setError(err.response?.data?.error || "Login failed");
     }

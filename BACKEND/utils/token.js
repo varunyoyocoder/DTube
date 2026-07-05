@@ -5,7 +5,7 @@ function generateAccessToken(user) {
     user,
     process.env.ACCESS_TOKEN_SECRET,
     {
-      expiresIn: "30m",
+      expiresIn: "3000m",
     }
   );
 }

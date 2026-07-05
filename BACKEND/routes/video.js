@@ -3,62 +3,84 @@ const router = express.Router();
 const authenticateToken = require("../middleware/authenticateaccessToken");
 
 const {
+  getAllVideos,
   getVideoById,
   getVideoByChannelId,
   getVideoByCategory,
-  createVideo,
-  deleteVideo,
-  reportVideo,
-
-  addSubscriptions,
-  deleteSubscriptions,
-  getAllSubscribersCount,
-  getAllSubscriptions,
-
+  getHistory,
+  getLikedVideos,
   addComment,
   deleteComment,
+  deleteVideo,
+  addVideoLike,
+  deleteVideoLike,
+  addCommentLike,
+  deleteCommentLike,
+  addSubscriptions,
+  deleteSubscriptions,
+  reportVideo,
+  
+  getAllSubscribers,
+  getAllSubscriptions,
+  getVideosLikes,
+
   getAllCommentsByVideoId,
   editComment,
   reportComment,
-
-  getVideosLikesCount,
-  getCommentsLikesCount,
-  addVideoLike,
-  addCommentLike,
-  deleteVideoLike,
-  deleteCommentLike,
+  getCommentsLikes,
 } = require("../controllers/videoController");
 router.get("/test", (req, res) => {
   res.send("Video router working");
 });
 
-router.post("/create", authenticateToken, createVideo);
-router.get("/watch/:videoId", getVideoById);
+router.get("/", getAllVideos);
+router.get("/history", getHistory);
+router.get("/liked", getLikedVideos);
+
 router.get("/channel/:channelId", getVideoByChannelId);
-router.get("/channel/:channelId/subscribers", getAllSubscribersCount);
-router.get("/subscriptions", authenticateToken, getAllSubscriptions);
+router.get("/channel/:channelId/subscribers", getAllSubscribers);
+router.get("/subscriptions", getAllSubscriptions);
 router.get("/:videoId/comments", getAllCommentsByVideoId);
-router.post("/:videoId/report", authenticateToken, reportVideo);
-router.get("/:videoId/likes", getVideosLikesCount);
-router.get("/:videoId/comments/:commentId/likes", getCommentsLikesCount);
-router.get("/:category", getVideoByCategory);
+router.post("/:videoId/report", reportVideo);
+router.get("/:videoId/likes", getVideosLikes);
+router.get("/:videoId/comments/:commentId/likes", getCommentsLikes);
+router.get("/:videoId", getVideoById);
+router.get("/category/:category", getVideoByCategory);
 
-router.post("/:videoId/likes/add", authenticateToken, addVideoLike);
-router.post("/:videoId/comments/create", authenticateToken, addComment);
-router.post("/:videoId/comments/:commentId/likes/add", authenticateToken, addCommentLike);
-router.post("/channel/:channelId/subscribe/add", authenticateToken, addSubscriptions);
+router.post("/:videoId/likes/add",  addVideoLike);
+router.post("/:videoId/comments/add", addComment);
+router.post(
+  "/:videoId/comments/:commentId/likes/add",
+  addCommentLike,
+);
+router.post(
+  "/channel/:channelId/subscribe/add",
+  addSubscriptions,
+);
 
-router.patch("/:videoId/comments/:commentId/edit",authenticateToken,editComment);
-router.post("/:videoId/comments/:commentId/report",authenticateToken,reportComment);
-router.post("/:videoId/report",authenticateToken,reportVideo);
+router.patch(
+  "/:videoId/comments/:commentId/edit",
+  editComment,
+);
+router.post(
+  "/:videoId/comments/:commentId/report",
+  reportComment,
+);
+router.post("/:videoId/report", reportVideo);
 
-router.delete("/channel/:channelId/subscribe/delete", authenticateToken ,deleteSubscriptions);
-router.delete("/:videoId/comments/:commentId/likes/delete", authenticateToken, deleteCommentLike);
-router.delete("/:videoId/comments/:commentId/delete", authenticateToken, deleteComment);
-router.delete("/:videoId/likes/delete", authenticateToken, deleteVideoLike);
-router.delete("/:videoId", authenticateToken, deleteVideo);
-
-
-
+router.delete(
+  "/channel/:channelId/subscribe/delete",
+  deleteSubscriptions,
+);
+router.delete(
+  "/:videoId/comments/:commentId/likes/delete",
+  deleteCommentLike,
+);
+router.delete(
+  "/:videoId/comments/:commentId/delete",
+  deleteComment,
+);
+router.delete("/:videoId/likes/delete", deleteVideoLike);
+router.delete("/:videoId", deleteVideo);
 
 module.exports = router;

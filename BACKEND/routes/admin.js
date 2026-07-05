@@ -25,7 +25,7 @@ const {
 router.get("/dashboard", getDashboard);
 
 // Users
-router.get("/users", getUsers);
+// router.get("/users", getUsers);
 router.get("/users/:userId", getUserById);
 router.patch("/users/:userId",updateUser);
 router.delete("/users/:userId", deleteUser);

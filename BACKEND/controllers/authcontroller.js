@@ -122,6 +122,7 @@ exports.login = async (req, res) => {
     userId: user._id,
     username: user.username,
     profileImage:user.profileImageURL,
+    userRole:user.role,
   });
 };
 

@@ -78,6 +78,7 @@ exports.createVideo = async (req, res) => {
         error: "Thumbnail and video required",
       });
     }
+    const ownerName=await Users.findById(req.userId).then(user => user.username);
     const thumbnailURL = await uploadToS3(req.files.thumbnail[0], "thumbnails");
     const videoURL = await uploadToS3(req.files.video[0], "videos");
     const video = await Videos.create({
@@ -87,6 +88,7 @@ exports.createVideo = async (req, res) => {
       thumbnailURL: thumbnailURL,
       videoURL: videoURL,
       ownerId: req.userId,
+      ownerName: ownerName,
     });
     res.status(201).json({
       message: "Video created",
@@ -102,46 +104,38 @@ exports.createVideo = async (req, res) => {
 exports.deleteVideo = async (req, res) => {
   try {
     const video = await Videos.findById(req.params.videoId);
-
+    const userId=req.userId;
+    const user=await Users.findById(userId)
     if (!video) {
       return res.status(404).json({
         error: "Video not found",
       });
     }
-
-    if (!video.ownerId.equals(req.userId)) {
+    if (!video.ownerId.equals(req.userId) && user.role!=="admin") {
       return res.status(403).json({
         error: "Unauthorized",
       });
     }
-
     if (video.thumbnailURL) {
       await deleteFromS3(keyFromURL(video.thumbnailURL));
     }
-
     if (video.videoURL) {
       await deleteFromS3(keyFromURL(video.videoURL));
     }
-
     await Comments.deleteMany({
       videoId: video._id,
     });
-
     await CommentsLikes.deleteMany({
       videoId: video._id,
     });
-
     await VideosLikes.deleteMany({
       videoId: video._id,
     });
-
-    await Reports.deleteMany({
-      targetType: "video",
-      targetId: video._id,
-    });
-
+    // await Reports.deleteMany({
+    //   targetType: "video",
+    //   targetId: video._id,
+    // });
     await Videos.findByIdAndDelete(video._id);
-
     res.json({
       message: "Video deleted",
     });

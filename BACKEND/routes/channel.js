@@ -7,6 +7,7 @@ const {
   removeProfilePicture,
   createVideo,
   deleteVideo,
+
 } = require("../controllers/channelController");
 
 router.patch("/changeProfilePicture", upload.single("profileImage"), changeProfilePicture);
@@ -19,6 +20,6 @@ router.post(
   ]),
   createVideo,
 );
-router.post("/deleteVideo", deleteVideo);
+router.post("/:videoId/delete", deleteVideo);
 
 module.exports = router;

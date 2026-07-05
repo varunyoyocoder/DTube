@@ -6,15 +6,22 @@ const CommentsLikes = require("../models/CommentsLikes");
 const Subscribers = require("../models/Subscribers");
 const Reports = require("../models/Reports");
 const updateModeration = require("../utils/updateModeration");
+const VideoViews = require("../models/VideoViews");
 
-//videos
-
-exports.getVideoById = async (req, res) => {
-  const videoId = req.params.videoId;
+exports.getAllVideos = async (req, res) => {
   try {
-    const video = await Videos.findOne({ _id: videoId, status: "active" });
-    if (!video) return res.status(404).json({ error: "Video not found" });
-    res.json(video);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const videos = await Videos.find({ status: "active" })
+      .sort({
+        likes: -1,
+        views: -1,
+      })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json(videos);
   } catch (err) {
     res.status(500).json({
       error: err.message,
@@ -22,14 +29,159 @@ exports.getVideoById = async (req, res) => {
   }
 };
 
-exports.getVideoByChannelId = async (req, res) => {
-  const channelId = req.params.channelId;
+exports.getHistory = async (req, res) => {
   try {
-    const ChannelVideos = await Videos.find({
-      ownerId: channelId,
+    const userId = req.userId;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const latestViews = await VideoViews.find({ userId })
+      .sort({ viewedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const videos = await Promise.all(
+      latestViews.map((view) => Videos.findById(view.videoId)),
+    );
+
+    res.json(videos.filter(Boolean));
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+};
+
+exports.getLikedVideos = async (req, res) => {
+  const userId = req.userId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  try {
+    const videoLikes = await VideosLikes.find({ userId })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    if (!videoLikes) {
+      return res.status(404).json({
+        error: "LikedVideos not found",
+      });
+    }
+    const likedVideos = await Promise.all(
+      videoLikes.map((like) => Videos.findById(like.videoId)),
+    );
+
+    res.json(likedVideos.filter(Boolean));
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+};
+
+exports.getVideoById = async (req, res) => {
+  const { videoId } = req.params;
+  const userId = req.userId;
+  try {
+    const video = await Videos.findOne({
+      _id: videoId,
       status: "active",
     });
-    res.json(ChannelVideos);
+    if (!video) {
+      return res.status(404).json({
+        error: "Video not found",
+      });
+    }
+    const previousView = await VideoViews.findOne({
+      videoId,
+      userId,
+    });
+    const oneHour = 60 * 60 * 1000;
+    if (
+      !previousView ||
+      Date.now() - previousView.viewedAt.getTime() > oneHour
+    ) {
+      video.views += 1;
+      await video.save();
+
+      await VideoViews.findOneAndUpdate(
+        { videoId, userId },
+        {
+          $set: {
+            viewedAt: new Date(),
+          },
+        },
+        {
+          upsert: true,
+          returnDocument: "after",
+        },
+      );
+    }
+    return res.status(200).json(video);
+  } catch (err) {
+    return res.status(500).json({
+      error: err.message,
+    });
+  }
+};
+
+exports.getVideoByChannelId = async (req, res) => {
+  const { channelId } = req.params;
+  const userId = req.userId;
+  try {
+    const channel = await Users.findById(channelId);
+    if (!channel) {
+      return res.status(404).json({
+        error: "Channel not found",
+      });
+    }
+    const videos = await Videos.find({
+      ownerId: channelId,
+      status: "active",
+    }).sort({
+      createdAt: -1,
+    });
+    const subscribersCount = await Subscribers.countDocuments({
+      channelId,
+    });
+
+    const isSubscribed = await Subscribers.findOne({
+      subscriberId:userId,
+      channelId:channelId,
+    });
+
+    res.status(200).json({
+      username: channel.username,
+      profileImage: channel.profileImageURL,
+      videos,
+      subscribersCount,
+      isSubscribed: !!isSubscribed,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+};
+
+exports.getAllSubscriptions = async (req, res) => {
+  const userId = req.userId;
+  console.log(userId)
+  try {
+    const subscriptions = await Subscribers.find({ subscriberId: userId });
+    const result = await Promise.all(
+      subscriptions.map(async (subscription) => {
+        const channel = await Users.findById(subscription.channelId);
+        const subscribers=await Subscribers.find({channelId:subscription.channelId})
+        return {
+          channelId: subscription.channelId,
+          channelName: channel?.username,
+          profileImage: channel?.profileImageURL,
+          subscriberCount:subscribers?subscribers.length:0,
+        };
+      })
+    );
+    res.status(200).json(result);
   } catch (err) {
     res.status(500).json({
       error: err.message,
@@ -44,7 +196,7 @@ exports.getVideoByCategory = async (req, res) => {
       category: category,
       status: "active",
     });
-    res.json(CategoryVideos);
+    res.status(200).json(CategoryVideos);
   } catch (err) {
     res.status(500).json({
       error: err.message,
@@ -103,6 +255,7 @@ exports.addComment = async (req, res) => {
   const videoId = req.params.videoId;
   const userId = req.userId;
   const commentText = req.body.commentText;
+  console.log(commentText);
 
   try {
     const video = await Videos.findOne({
@@ -115,12 +268,19 @@ exports.addComment = async (req, res) => {
         error: "Video not found",
       });
     }
+    const user = await Users.findById(userId);
     const comment = await Comments.create({
       videoId: videoId,
       userId: userId,
       commentText: commentText,
+      username: user?.username,
     });
-    res.status(201).json(comment);
+    const object = comment.toObject();
+
+    object.likes = 0;
+    object.userLiked = false;
+
+    res.status(201).json(object);
   } catch (err) {
     res.status(500).json({
       error: err.message,
@@ -130,7 +290,6 @@ exports.addComment = async (req, res) => {
 
 exports.deleteComment = async (req, res) => {
   console.log("deleteComment");
-
   const userId = req.userId;
   const commentId = req.params.commentId;
   try {
@@ -144,7 +303,7 @@ exports.deleteComment = async (req, res) => {
         error: "Comment not found",
       });
     }
-    if (!commentAvailable.userId.equals(req.userId)) {
+    if (!commentAvailable.userId.equals(req.userId) && user.role!=="admin") {
       return res.status(403).json({
         error: "Cannot delete others comments",
       });
@@ -155,8 +314,9 @@ exports.deleteComment = async (req, res) => {
       targetType: "comment",
       targetId: commentId,
     });
-    res.sendStatus(204);
+    res.status(200).json({message:"deleted message"});
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       error: err.message,
     });
@@ -164,15 +324,49 @@ exports.deleteComment = async (req, res) => {
 };
 
 exports.getAllCommentsByVideoId = async (req, res) => {
-  const videoId = req.params.videoId;
+  const { videoId } = req.params;
+
   try {
     const comments = await Comments.find({
-      videoId: videoId,
+      videoId,
       status: "active",
     });
-    res.json(comments);
+
+    if (comments.length === 0) {
+      return res.json([]);
+    }
+
+    const allLikes = await CommentsLikes.find({
+      commentId: {
+        $in: comments.map((comment) => comment._id),
+      },
+    });
+
+    const likesMap = new Map();
+
+    allLikes.forEach((like) => {
+      const commentId = like.commentId.toString();
+
+      if (!likesMap.has(commentId)) {
+        likesMap.set(commentId, []);
+      }
+
+      likesMap.get(commentId).push(like);
+    });
+
+    const result = comments.map((comment) => {
+      const commentLikes = likesMap.get(comment._id.toString()) || [];
+
+      return {
+        ...comment.toObject(),
+        likes: commentLikes.length,
+        userLiked: commentLikes.some((like) => like.userId.equals(req.userId)),
+      };
+    });
+
+    return res.status(200).json(result);
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       error: err.message,
     });
   }
@@ -214,46 +408,38 @@ exports.editComment = async (req, res) => {
 exports.addSubscriptions = async (req, res) => {
   const channelId = req.params.channelId;
   const userId = req.userId;
-
   try {
-    if (channelId.equals(req.userId)) {
+    if (channelId == req.userId) {
       return res
         .status(400)
         .json({ error: "Cannot subscribe to your own channel" });
     }
-
-    if (
-      await Subscribers.findOne({ channelId: channelId, subscriberId: userId })
-    )
+    const result = await Subscribers.findOne({
+      channelId: channelId,
+      subscriberId: userId,
+    });
+    if (result) {
       return res.status(409).json({ error: "Channel already subscribed" });
-
-    if (!(await Users.findById(channelId)))
+    }
+    const channelExists = await Users.findById(channelId);
+    if (!channelExists) {
       return res.status(404).json({ error: "Channel not found" });
-
+    }
     const subscription = await Subscribers.create({
       channelId: channelId,
       subscriberId: userId,
     });
-
+    console.log(subscription);
     res.status(201).json(subscription);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+  res.status(500).json({
+    error: err.message,
+  });
   }
 };
 
-exports.getAllSubscriptions = async (req, res) => {
-  const userId = req.userId;
-  try {
-    const subscriptions = await Subscribers.find({ subscriberId: userId });
-    res.json(subscriptions);
-  } catch (err) {
-    res.status(500).json({
-      error: err.message,
-    });
-  }
-};
-
-exports.getAllSubscribersCount = async (req, res) => {
+exports.getAllSubscribers = async (req, res) => {
   const channelId = req.params.channelId;
   try {
     const channel = await Users.findById(channelId);
@@ -263,11 +449,19 @@ exports.getAllSubscribersCount = async (req, res) => {
         error: "Channel not found",
       });
     }
+    const userSubscribed = await Subscribers.findOne({
+      channelId: channelId,
+      subscriberId: req.userId,
+    });
+
     const subscribers = await Subscribers.find({
       channelId: channelId,
     });
     // console.log(subscribers);
-    res.json(subscribers);
+    res.status(200).json({
+      subscribers: subscribers,
+      userSubscribed: userSubscribed ? true : false,
+    });
   } catch (err) {
     res.status(500).json({
       error: err.message,
@@ -289,7 +483,7 @@ exports.deleteSubscriptions = async (req, res) => {
       return res.sendStatus(404);
     }
     await Subscribers.deleteOne({ channelId: channelId, subscriberId: userId });
-    res.sendStatus(204);
+    res.status(200).json({messsage:"subscription deleted"});
   } catch (err) {
     res.status(500).json({
       error: err.message,
@@ -298,9 +492,8 @@ exports.deleteSubscriptions = async (req, res) => {
 };
 
 //Likes
-exports.getVideosLikesCount = async (req, res) => {
+exports.getVideosLikes = async (req, res) => {
   const videoId = req.params.videoId;
-
   try {
     const video = await Videos.findOne({
       _id: videoId,
@@ -315,13 +508,18 @@ exports.getVideosLikesCount = async (req, res) => {
     const videoLikes = await VideosLikes.find({
       videoId: videoId,
     });
-    res.json(videoLikes);
+    const user = await VideosLikes.findOne({
+      videoId: videoId,
+      userId: req.userId,
+    });
+    res.json({ likes: videoLikes, userLiked: user ? true : false });
   } catch (err) {
     res.status(500).json({
       error: err.message,
     });
   }
 };
+
 exports.addVideoLike = async (req, res) => {
   const videoId = req.params.videoId;
   const userId = req.userId;
@@ -362,6 +560,8 @@ exports.addCommentLike = async (req, res) => {
   const commentId = req.params.commentId;
   const userId = req.userId;
   const videoId = req.params.videoId;
+  console.log(req.params);
+  console.log(req.userId);
 
   try {
     const comment = await Comments.findOne({
@@ -390,6 +590,7 @@ exports.addCommentLike = async (req, res) => {
     });
     res.status(201).json(commentLike);
   } catch (err) {
+    console.error(err);
     res.status(500).json({
       error: err.message,
     });
@@ -440,7 +641,7 @@ exports.deleteCommentLike = async (req, res) => {
   }
 };
 
-exports.getCommentsLikesCount = async (req, res) => {
+exports.getCommentsLikes = async (req, res) => {
   const commentId = req.params.commentId;
 
   try {

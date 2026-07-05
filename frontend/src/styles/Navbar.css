@@ -1,0 +1,239 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: var(--navbar-h, 72px);
+  z-index: 1000;
+  box-sizing: border-box;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: linear-gradient(90deg, #071009, #0e2113);
+  border-bottom: 1px solid var(--accent-border, rgba(31, 185, 84, 0.35));
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#logo {
+  width: 150px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.search-section {
+  flex: 1 1 auto;
+  max-width: 520px;
+  display: flex;
+}
+
+.search-section input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 18px;
+  border: 1.5px solid var(--accent-border, rgba(31, 185, 84, 0.35));
+  border-right: none;
+  border-radius: 30px 0 0 30px;
+  background: var(--surface, #141414);
+  color: var(--text, #fff);
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.search-section input::placeholder {
+  color: var(--text-faint, #777);
+}
+
+.search-section input:focus {
+  background: var(--surface-2, #1c1c1c);
+  box-shadow: 0 0 0 3px var(--accent-soft, rgba(31, 185, 84, 0.2));
+  outline: none;
+}
+
+.search-section button {
+  width: 56px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--accent, #1fb954);
+  border-left: none;
+  border-radius: 0 30px 30px 0;
+  background: var(--accent, #1fb954);
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.search-section button:hover {
+  background: var(--accent-hover, #169c45);
+}
+
+.user-section {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.signin-btn {
+  padding: 11px 24px;
+  border: none;
+  border-radius: 30px;
+  background: var(--accent, #1fb954);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.signin-btn:hover {
+  transform: translateY(-2px);
+  background: var(--accent-hover, #169c45);
+}
+
+.profile-container {
+  position: relative;
+}
+
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 30px;
+  transition: 0.2s;
+}
+
+.profile-button:hover {
+  background: var(--surface, rgba(255, 255, 255, 0.05));
+}
+
+.profile-pic {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent, #1fb954);
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+
+.profile-button:hover .profile-pic {
+  transform: scale(1.06);
+}
+
+.user-name {
+  color: var(--text, white);
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  margin: 0 !important;
+}
+
+.profile-menu {
+  position: absolute;
+  right: 0;
+  top: 56px;
+  width: 220px;
+  background: var(--surface-2, #17251b);
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+  border: 1px solid var(--accent-border, #1fb954);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  animation: menu-in 0.15s ease;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-item {
+  width: 100%;
+  padding: 14px 18px;
+  background: transparent;
+  border: none;
+  color: var(--text, white);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  font-size: 14.5px;
+  transition: 0.15s;
+}
+
+.menu-item:hover {
+  background: var(--accent, #1fb954);
+  color: white;
+}
+
+.logout-btn {
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 1024px) {
+  .search-section {
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 900px) {
+  .navbar {
+    padding: 0 20px;
+    gap: 14px;
+  }
+
+  .search-section {
+    max-width: 220px;
+  }
+
+  #logo {
+    width: 128px;
+    height: 48px;
+  }
+
+  .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 650px) {
+  .search-section {
+    display: none;
+  }
+
+  .navbar {
+    padding: 0 14px;
+  }
+
+  #logo {
+    width: 110px;
+  }
+}
+
+@media (max-width: 400px) {
+  .navbar {
+    height: 60px;
+  }
+
+  .profile-pic {
+    width: 36px;
+    height: 36px;
+  }
+}

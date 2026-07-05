@@ -10,29 +10,20 @@ const Reports=require("../models/Reports");
 
 exports.getDashboard = async (req, res) => {
   try {
-    const [totalUsers, totalVideos, totalComments] = await Promise.all([
-      Users.countDocuments(),
-      Videos.countDocuments(),
-      Comments.countDocuments(),
-    ]);
+    const users = await Users.find().select("username email profileImageURL role isBanned");
+    const result =await Promise.all(
+      users.map(async (user)=>{
+         const videoCount = await Videos.countDocuments({
+          ownerId: user._id,
+        });
+        return {
+          ...user.toObject(),
+          videoCount,
+        };
+      })
+    );
 
-    res.json({
-      totalUsers,
-      totalVideos,
-      totalComments,
-    });
-  } catch (err) {
-    res.status(500).json({
-      error: err.message,
-    });
-  }
-};
-
-//Users
-exports.getUsers = async (req, res) => {
-  try {
-    const users = await Users.find().select("-password -refreshTokens");
-    res.json(users);
+    res.status(200).json(result);
   } catch (err) {
     res.status(500).json({
       error: err.message,
@@ -108,8 +99,8 @@ exports.deleteUser = async (req, res) => {
       return res.status(403).json({ error: "admin account cannot  be deleted" });
     }
     await CommentsLikes.deleteMany({ userId: userId });
-    await VideosLikes.deleteMany({ userId: userId });
     await Comments.deleteMany({ userId: userId });
+    await VideosLikes.deleteMany({ userId: userId });
     await Videos.deleteMany({ ownerId: userId });
     await Subscribers.deleteMany({ subscriberId: userId });
     await Subscribers.deleteOne({ channelId: userId });

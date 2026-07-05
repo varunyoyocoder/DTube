@@ -29,7 +29,10 @@ const videosSchema = new mongoose.Schema(
       ref: "Users",
       required: true,
     },
-
+    ownerName: {
+      type: String,
+      required: true,
+    },  
     views: {
       type: Number,
       default: 0,
