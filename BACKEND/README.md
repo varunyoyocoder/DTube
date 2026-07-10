@@ -174,6 +174,16 @@ Media Storage
 
 ---
 
+## Live Demo
+
+Frontend:
+https://dtube.vercel.app
+
+Backend API:
+https://dtube-api.onrender.com
+
+---
+
 ## Author
 
 Varun Sivanesan
