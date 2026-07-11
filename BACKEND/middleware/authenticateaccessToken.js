@@ -10,9 +10,9 @@ function authenticateAccessToken(req, res, next) {
 
   if (!token){
  console.log("No token");
-    return res.send(401).json({message:"token empty"});
+    return res.status(401).json({message:"token empty"});
   } 
-   console.log(jwt.decode(token));
+   console.log(decoded);
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, payload) => {
     if (err) return res.status(401).json({error:"invalid access token"});
     const result = await Users.findOne({ username: payload.username }); 
