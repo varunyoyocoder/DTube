@@ -38,11 +38,12 @@ function Album({
     setLoading(true);
     try {
       const response = await api.get(
-        `${endpoint}?page=${currentPage}&limit=10`,
+        `${endpoint}?page=${currentPage}&limit=2`,
       );
       const newVideos = response.data;
+      console.log(response.data);
       setFetchedVideos((prev) => [...prev, ...newVideos]);
-      if (newVideos.length < 10) {
+      if (newVideos.length < 2) {
         setHasMore(false);
       }
       setPage(currentPage + 1);
@@ -52,7 +53,6 @@ function Album({
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (fetchVideos) {
       loadVideos(1);

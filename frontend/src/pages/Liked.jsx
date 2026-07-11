@@ -11,6 +11,8 @@ import Layout from "../components/Layout";
 function Liked() {
   const username = localStorage.getItem("username");
   const [videos, setVideos] = useState(null);
+    const userRole=localStorage.getItem("userRole");
+  const isAdmin= userRole==="admin";
   useEffect(() => {
     const fetchVideos = async () => {
       try {
@@ -41,7 +43,7 @@ function Liked() {
             Favourite Videos
           </h2>
 
-          <Album cardsArray={videos} fetchVideos={false} />
+          <Album cardsArray={videos} fetchVideos={false} isAdmin={isAdmin} />
         </div>
       </main>
     </Layout>

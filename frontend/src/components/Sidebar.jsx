@@ -5,7 +5,6 @@ const NAV_ITEMS = [
   { to: "/", icon: "🏠", label: "Home", end: true },
   { to: "/subscription",icon: "📺", label: "Subscriptions" },
   { to:"/history",icon: "🕘", label: "History" },
-  // { icon: "📚", label: "Library" },
   {to:"/likedVideos", icon: "👍", label: "Liked Videos" },
 ];
 

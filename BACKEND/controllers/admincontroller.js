@@ -110,6 +110,7 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 // Videos
 exports.getVideoById = async (req, res) => {
   const videoId = req.params.videoId;
@@ -175,16 +176,13 @@ exports.updateVideoStatus = async (req, res) => {
         error: "Video not found",
       });
     }
-
     if (video.status === status) {
       return res.status(400).json({
         error: `Video is already ${status}`,
       });
     }
-
     video.status = status;
     await video.save();
-
     res.json(video);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -295,8 +293,6 @@ exports.updateCommentStatus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
 
 exports.deleteComment = async  (req,res)=>{
   const commentId=req.params.commentId;

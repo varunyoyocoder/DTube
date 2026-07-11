@@ -1,5 +1,5 @@
 import "../styles/Watch.css";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 import { Trash,Plus } from "react-bootstrap-icons";
 import { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
@@ -7,9 +7,13 @@ import api from "../services/api";
 import likeIcon from "../assets/hand-thumbs-up.svg";
 import likedIcon from "../assets/hand-thumbs-up-fill.svg";
 import Layout from "../components/Layout";
+
 function Watch() {
+  const navigate = useNavigate();
   const { videoId } = useParams();
   const userId = localStorage.getItem("userId");
+  const userRole=localStorage.getItem("userRole");
+  const isAdmin=userRole==="admin"
   const [video, setVideo] = useState(null);
   const [videoLikes, setVideoLikes] = useState(0);
   const [videoComments, setVideoComments] = useState([]);
@@ -197,8 +201,8 @@ function Watch() {
 
           <div className="channel-section">
             <div className="channel-info">
-              <div className="channel-name">{video.ownerName}</div>
-
+              <div className="channel-name" 
+               onClick={() => navigate(`/channel/${video.ownerId}`)}>{video.ownerName}</div>
               <div className="subscribers">{subscribers} Subscribers</div>
             </div>
 
@@ -236,7 +240,7 @@ function Watch() {
               <div key={comment._id} className="comment-card">
                 <div className="comment-header">
                   <h5>@{comment.username}</h5>
-                  {(comment.userId === userId  || isAdmin )&& (
+                  {((comment.userId === userId ) || isAdmin )&& (
                     <Button
                       variant="light"
                       onClick={() => handleDeleteComment(comment._id)}

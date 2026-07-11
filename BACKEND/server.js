@@ -24,7 +24,6 @@ app.use(
 );
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-connectDB();
 
 app.use("/auth", authRoutes);
 app.use("/videos", authenticateToken, videoRoutes);
@@ -35,6 +34,7 @@ app.use("/channel", authenticateToken, channelRoutes);
 app.get("/", (req, res) => {
   res.send("Server working");
 });
+connectDB();
 
 app.listen(3000, () => {
   console.log("server is running on port 3000");

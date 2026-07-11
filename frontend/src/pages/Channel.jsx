@@ -5,20 +5,23 @@ import defaultUser from "../assets/user.png";
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import Album from "../components/Album";
-import { Button } from "react-bootstrap";
 import Layout from "../components/Layout";
 
 function Channel() {
   const { channelId } = useParams();
-  const [loading, setLoading] = useState(false);
-  const username = localStorage.getItem("username");
+  const [loading, setLoading] = useState(true);
+  const userRole = localStorage.getItem("userRole");
   const [ownerName, setOwnerName] = useState(null);
   const [profileImage, setProfileImage] = useState(defaultUser);
   const [subscriber, setSubscribers] = useState(0);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
   const userId = localStorage.getItem("userId");
   const [videos, setVideos] = useState([]);
   const isOwnChannel = userId === channelId;
+  const isAdmin = userRole === "admin";
+const [isBanned, setIsBanned] = useState(false);
+console.log(isBanned);
   useEffect(() => {
     const fetchChannelData = async () => {
       try {
@@ -29,6 +32,7 @@ function Channel() {
         setProfileImage(channelRes.data.profileImage || defaultUser);
         setSubscribers(channelRes.data.subscribersCount);
         setIsSubscribed(channelRes.data.isSubscribed);
+        setIsBanned(channelRes.data.isBanned)
       } catch (err) {
         console.error("Failed to load watch page:", err);
       } finally {
@@ -39,6 +43,8 @@ function Channel() {
   }, [channelId]);
   const navigate = useNavigate();
   const handleAddSubscription = async () => {
+    if (subscribing) return;
+    setSubscribing(true);
     try {
       if (isSubscribed) {
         await api.delete(`/videos/channel/${channelId}/subscribe/delete`);
@@ -51,6 +57,8 @@ function Channel() {
       }
     } catch (err) {
       console.error("Failed to update subscription:", err);
+    } finally {
+      setSubscribing(false);
     }
   };
   const handleProfile = async (e) => {
@@ -95,14 +103,13 @@ function Channel() {
       console.log(err.response || err);
     }
   };
-  const createVideo = async (e) => {
-    try {
-      const response = await api.post("/channel/createVideo");
-      alert(response.data.message);
-    } catch (err) {
-      console.log(err.response || err);
-    }
-  };
+  if (loading) {
+    return (
+      <Layout>
+        <h2>Loading...</h2>
+      </Layout>
+    );
+  }
   return (
     <Layout>
       <main className="profile-main">
@@ -133,8 +140,16 @@ function Channel() {
               />
             )}
             {!isOwnChannel && (
-              <button className="profile-btn" onClick={handleAddSubscription}>
-                {isSubscribed ? "Unsubscribe" : "Subscribe"}
+              <button
+                className="profile-btn"
+                onClick={handleAddSubscription}
+                disabled={subscribing}
+              >
+                {subscribing
+                  ? "Please wait..."
+                  : isSubscribed
+                    ? "Unsubscribe"
+                    : "Subscribe"}
               </button>
             )}
 
@@ -143,21 +158,27 @@ function Channel() {
                 <div className="profile-buttons">
                   <button
                     className="profile-btn"
+                    disabled={isBanned}
                     onClick={() =>
                       document.getElementById("profileInput").click()
                     }
                   >
                     Change Picture
                   </button>
+
                   <Link to="/create-video">
                     <button className="profile-btn">Upload Video</button>
                   </Link>
                   <button className="profile-btn" onClick={removeProfile}>
                     Remove Picture
                   </button>
+           
                 </div>
               </>
             )}
+               <p style={{ color: isBanned ? "red" : "#1cb150" }}>
+                    {isBanned ? "Banned" : "Active"}
+                  </p>
           </div>
         </div>
 
@@ -168,6 +189,7 @@ function Channel() {
             cardsArray={videos}
             fetchVideos={false}
             isOwnChannel={isOwnChannel}
+            isAdmin={isAdmin}
             onDelete={(videoId) =>
               setVideos((prev) => prev.filter((video) => video._id !== videoId))
             }

@@ -156,6 +156,7 @@ exports.getVideoByChannelId = async (req, res) => {
       videos,
       subscribersCount,
       isSubscribed: !!isSubscribed,
+      isBanned:channel.isBanned
     });
   } catch (err) {
     res.status(500).json({
@@ -303,7 +304,7 @@ exports.deleteComment = async (req, res) => {
         error: "Comment not found",
       });
     }
-    if (!commentAvailable.userId.equals(req.userId) && user.role!=="admin") {
+    if (!commentAvailable.userId.equals(req.userId) && req.user.role!=="admin") {
       return res.status(403).json({
         error: "Cannot delete others comments",
       });

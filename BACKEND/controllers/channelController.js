@@ -111,7 +111,7 @@ exports.deleteVideo = async (req, res) => {
         error: "Video not found",
       });
     }
-    if (!video.ownerId.equals(req.userId) && user.role!=="admin") {
+    if (!video.ownerId.equals(req.userId) && req.user.role!=="admin") {
       return res.status(403).json({
         error: "Unauthorized",
       });

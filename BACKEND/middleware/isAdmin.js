@@ -1,9 +1,15 @@
-const Users = require("../models/Users");
-async function   isAdmin(req, res, next) {
-  const user=await Users.findById(req.userId);
-  if (user.role !== "admin") {
-    return res.sendStatus(403);
+
+function isAdmin(req, res, next) {
+  if (!req.user) {
+  return res.status(404).json({
+    error: "User not found",
+  });
+}
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
+      error: "Admin access required",
+    });
   }
   next();
 }
-module.exports=isAdmin;
+module.exports = isAdmin;

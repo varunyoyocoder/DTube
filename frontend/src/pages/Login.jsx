@@ -12,16 +12,13 @@ function Login() {
   });
   const recaptchaRef = useRef(null);
   const navigate = useNavigate();
-
   const [error, setError] = useState("");
-
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const captchaToken = recaptchaRef.current.getValue();
@@ -40,17 +37,27 @@ function Login() {
       localStorage.setItem("username", response.data.username);
       localStorage.setItem("userId", response.data.userId);
       localStorage.setItem("userRole", response.data.userRole);
-      if (response.data.profileImage)
-        localStorage.setItem("profileImage", response.data.profileImage);
+      localStorage.setItem("isBanned", response.data.isBanned);
+      if (response.data.profileImage)localStorage.setItem("profileImage", response.data.profileImage);
       localStorage.setItem("refreshToken", response.data.refreshToken);
       console.log(response.data.refreshToken);
       console.log(response.data.accessToken);
-      alert("Login Successful");
-      // if (response.data.userRole === "admin") navigate("/admin");
-      // else {
+      if (response.data.isBanned) {
+        alert("Your account has been banned.");
+        setError(
+          "Your account has been banned. Please contact an administrator.",
+        );
+        return;
+        alert("Login Successful");
+      } else {
         navigate("/home");
-      // }
+      }
     } catch (err) {
+      console.log("Full error:", err);
+      console.log("Response:", err.response);
+      console.log("Data:", err.response?.data);
+      console.log("Status:", err.response?.status);
+      console.log(err);
       setError(err.response?.data?.error || "Login failed");
     }
   };

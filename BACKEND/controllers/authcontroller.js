@@ -6,8 +6,10 @@ const RefreshTokens = require("../models/RefreshTokens");
 
 const strongPassword = require("../utils/password");
 
-const generateAccessToken = require("../utils/token");
-const generateRefreshToken = require("../utils/token");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../utils/token");
 
 const axios = require("axios");
 
@@ -107,10 +109,13 @@ exports.login = async (req, res) => {
     email: user.email,
   });
 
+  
   const refreshToken = generateRefreshToken({
     username: user.username,
     email: user.email,
   });
+console.log("Access:", jwt.decode(accessToken));
+console.log("Refresh:", jwt.decode(refreshToken));
   await RefreshTokens.create({
     refreshToken,
   });
@@ -123,12 +128,29 @@ exports.login = async (req, res) => {
     username: user.username,
     profileImage:user.profileImageURL,
     userRole:user.role,
+    isBanned:user.isBanned
   });
+};
+
+exports.me = async (req, res) => {
+
+    res.json({
+
+        userId: req.user._id,
+
+        username: req.user.username,
+
+        role: req.user.role,
+
+        profileImage: req.user.profileImageURL,
+
+        isBanned: req.user.isBanned,
+    });
 };
 
 exports.refreshToken = async (req, res) => {
   try {
-    const token = req.body.token;
+    const token = req.body.refreshToken;
 
     if (!token) return res.sendStatus(401);
 

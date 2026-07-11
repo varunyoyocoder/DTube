@@ -5,7 +5,7 @@ function generateAccessToken(user) {
     user,
     process.env.ACCESS_TOKEN_SECRET,
     {
-      expiresIn: "3000m",
+      expiresIn: "1h",
     }
   );
 }
@@ -15,9 +15,11 @@ function generateRefreshToken(user) {
     user,
     process.env.REFRESH_TOKEN_SECRET,
     {
-       expiresIn: "7d"
+       expiresIn: "12h"
     }
   );
 }
-
-module.exports = generateAccessToken;
+module.exports = {
+  generateAccessToken,
+  generateRefreshToken,
+};
