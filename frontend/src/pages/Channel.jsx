@@ -21,7 +21,6 @@ function Channel() {
   const isOwnChannel = userId === channelId;
   const isAdmin = userRole === "admin";
 const [isBanned, setIsBanned] = useState(false);
-console.log(isBanned);
   useEffect(() => {
     const fetchChannelData = async () => {
       try {

@@ -22,42 +22,54 @@ function Album({
   const [deleteVideoId, setDeleteVideoId] = useState(null);
   const [deleteText, setDeleteText] = useState("");
   let videos = fetchVideos
-    ? fetchedVideos
-    : Array.isArray(cardsArray)
-      ? cardsArray
-      : [];
-
-  useEffect(() => {
-    if (!fetchVideos) return;
-    setFetchedVideos([]);
-    setPage(1);
-    setHasMore(true);
-  }, [endpoint, fetchVideos]);
-  const loadVideos = async (currentPage = page) => {
-    if (!fetchVideos || loading || !hasMore) return;
+  ? fetchedVideos
+  : Array.isArray(cardsArray)
+  ? cardsArray
+  : [];
+  
+useEffect(() => {
+  if (!fetchVideos || loading || !hasMore) return;
+  const fetchInitialVideos = async () => {
     setLoading(true);
     try {
+      setFetchedVideos([]);
+      setPage(1);
+      setHasMore(true);
+      const separator = endpoint.includes("?") ? "&" : "?";
       const response = await api.get(
-        `${endpoint}?page=${currentPage}&limit=2`,
+        `${endpoint}${separator}page=1&limit=3`
       );
       const newVideos = response.data;
-      console.log(response.data);
-      setFetchedVideos((prev) => [...prev, ...newVideos]);
-      if (newVideos.length < 2) {
-        setHasMore(false);
-      }
-      setPage(currentPage + 1);
+      setFetchedVideos(newVideos);
+      setPage(2);
+      setHasMore(newVideos.length === 3);
     } catch (err) {
       console.error("Failed to fetch videos:", err);
     } finally {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    if (fetchVideos) {
-      loadVideos(1);
-    }
-  }, [endpoint]);
+  fetchInitialVideos();
+}, [endpoint, fetchVideos]);
+
+const loadVideos = async (currentPage = page) => {
+  if (!fetchVideos || loading || !hasMore) return;
+  setLoading(true);
+  try {
+    const separator = endpoint.includes("?") ? "&" : "?";
+    const response = await api.get(
+      `${endpoint}${separator}page=${currentPage}&limit=3`
+    );
+    const newVideos = response.data;
+    setFetchedVideos((prev) => [...prev, ...newVideos]);
+   setHasMore(newVideos.length === 3);
+    setPage(currentPage + 1);
+  } catch (err) {
+    console.error("Failed to fetch videos:", err);
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     if (!fetchVideos) return;
     const handleScroll = () => {

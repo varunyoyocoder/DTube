@@ -11,6 +11,7 @@ function Login() {
     password: "",
   });
   const recaptchaRef = useRef(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const handleChange = (e) => {
@@ -20,19 +21,24 @@ function Login() {
     });
   };
   const handleSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
-    const captchaToken = recaptchaRef.current.getValue();
+   if (!recaptchaRef.current) {
+  alert("reCAPTCHA is still loading. Please wait.");
+  return;
+}
+const captchaToken = recaptchaRef.current.getValue();
     if (!captchaToken) {
       alert("Please complete reCAPTCHA");
       return;
     }
+    setLoading(true);
     try {
       const response = await api.post("/auth/login", {
         email: form.email,
         password: form.password,
         captchaToken: captchaToken,
       });
-
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("username", response.data.username);
       localStorage.setItem("userId", response.data.userId);
@@ -40,18 +46,15 @@ function Login() {
       localStorage.setItem("isBanned", response.data.isBanned);
       if (response.data.profileImage)localStorage.setItem("profileImage", response.data.profileImage);
       localStorage.setItem("refreshToken", response.data.refreshToken);
-      console.log(response.data.refreshToken);
-      console.log(response.data.accessToken);
       if (response.data.isBanned) {
         alert("Your account has been banned.");
         setError(
           "Your account has been banned. Please contact an administrator.",
         );
         return;
-        alert("Login Successful");
-      } else {
-        navigate("/home");
       }
+        alert("Login Successful");
+        navigate("/home");
     } catch (err) {
       console.log("Full error:", err);
       console.log("Response:", err.response);
@@ -59,6 +62,10 @@ function Login() {
       console.log("Status:", err.response?.status);
       console.log(err);
       setError(err.response?.data?.error || "Login failed");
+    }
+    finally {
+      recaptchaRef.current?.reset();
+      setLoading(false);
     }
   };
 
@@ -96,8 +103,9 @@ function Login() {
               sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
             />
           </div>
-
-          <button type="submit">Login</button>
+          <button type="submit" disabled={loading}>
+    {loading ? "Logging in..." : "Login"}
+</button>
         </form>
 
         <div className="register-link">

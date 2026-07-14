@@ -88,8 +88,6 @@ exports.login = async (req, res) => {
     });
   }
   const user = await Users.findOne({ email });
-  console.log(user);
-
   if (!user) {
     return res.status(404).json({
       error: "Email not found",
@@ -114,8 +112,6 @@ exports.login = async (req, res) => {
     username: user.username,
     email: user.email,
   });
-console.log("Access:", jwt.decode(accessToken));
-console.log("Refresh:", jwt.decode(refreshToken));
   await RefreshTokens.create({
     refreshToken,
   });
@@ -131,23 +127,16 @@ console.log("Refresh:", jwt.decode(refreshToken));
     isBanned:user.isBanned
   });
 };
-
 exports.me = async (req, res) => {
 
     res.json({
-
-        userId: req.user._id,
-
+        userId: req.userId,
         username: req.user.username,
-
         role: req.user.role,
-
         profileImage: req.user.profileImageURL,
-
         isBanned: req.user.isBanned,
     });
 };
-
 exports.refreshToken = async (req, res) => {
   try {
     const token = req.body.refreshToken;

@@ -11,8 +11,7 @@ const VideoViews = require("../models/VideoViews");
 exports.getAllVideos = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-
+    const limit = parseInt(req.query.limit) || 3;
     const videos = await Videos.find({ status: "active" })
       .sort({
         likes: -1,
@@ -20,7 +19,6 @@ exports.getAllVideos = async (req, res) => {
       })
       .skip((page - 1) * limit)
       .limit(limit);
-
     res.json(videos);
   } catch (err) {
     res.status(500).json({
@@ -29,22 +27,73 @@ exports.getAllVideos = async (req, res) => {
   }
 };
 
+exports.searchVideos = async (req, res) => {
+    try {
+      const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+        const { query } = req.query;
+        if (!query || query.trim() === "") {
+            return res.status(400).json({
+                message: "Search query is required",
+            });
+        }
+         const users = await Users.find({
+            username: {
+                $regex: query,
+                $options: "i",
+            },
+        }).select("_id");
+        const userIds = users.map(user => user._id);
+        const videos = await Videos.find({
+            $or: [
+                {
+                    title: {
+                        $regex: query,
+                        $options: "i",
+                    },
+                },
+                {
+                    category: {
+                        $regex: query,
+                        $options: "i",
+                    },
+                },
+                {
+                    ownerId: {
+                        $in: userIds,
+                    },
+                },
+            ],
+        })
+         .sort({
+        likes: -1,
+        views: -1,
+        createdAt: -1 ,
+      })
+      .skip((page - 1) * limit)
+      .limit(limit)
+            .populate("ownerId", "username")
+        res.status(200).json(videos);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            message: "Failed to search videos",
+        });
+    }
+};
+
 exports.getHistory = async (req, res) => {
   try {
     const userId = req.userId;
-
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-
+    const limit = parseInt(req.query.limit) || 3;
     const latestViews = await VideoViews.find({ userId })
       .sort({ viewedAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
-
     const videos = await Promise.all(
       latestViews.map((view) => Videos.findById(view.videoId)),
     );
-
     res.json(videos.filter(Boolean));
   } catch (err) {
     res.status(500).json({
@@ -56,12 +105,11 @@ exports.getHistory = async (req, res) => {
 exports.getLikedVideos = async (req, res) => {
   const userId = req.userId;
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 3;
   try {
     const videoLikes = await VideosLikes.find({ userId })
       .skip((page - 1) * limit)
       .limit(limit);
-
     if (!videoLikes) {
       return res.status(404).json({
         error: "LikedVideos not found",
@@ -70,14 +118,16 @@ exports.getLikedVideos = async (req, res) => {
     const likedVideos = await Promise.all(
       videoLikes.map((like) => Videos.findById(like.videoId)),
     );
-
     res.json(likedVideos.filter(Boolean));
   } catch (err) {
     res.status(500).json({
       error: err.message,
     });
   }
-};
+ };
+  
+
+
 
 exports.getVideoById = async (req, res) => {
   const { videoId } = req.params;
@@ -167,7 +217,6 @@ exports.getVideoByChannelId = async (req, res) => {
 
 exports.getAllSubscriptions = async (req, res) => {
   const userId = req.userId;
-  console.log(userId)
   try {
     const subscriptions = await Subscribers.find({ subscriberId: userId });
     const result = await Promise.all(
@@ -226,8 +275,6 @@ exports.createVideo = async (req, res) => {
 
 exports.deleteVideo = async (req, res) => {
   const videoId = req.params.videoId;
-  console.log("deleteVideo");
-
   try {
     const videoAvailable = await Videos.findOne({ _id: videoId });
     if (!videoAvailable)
@@ -256,8 +303,6 @@ exports.addComment = async (req, res) => {
   const videoId = req.params.videoId;
   const userId = req.userId;
   const commentText = req.body.commentText;
-  console.log(commentText);
-
   try {
     const video = await Videos.findOne({
       _id: videoId,
@@ -290,7 +335,6 @@ exports.addComment = async (req, res) => {
 };
 
 exports.deleteComment = async (req, res) => {
-  console.log("deleteComment");
   const userId = req.userId;
   const commentId = req.params.commentId;
   try {
@@ -298,7 +342,6 @@ exports.deleteComment = async (req, res) => {
       _id: commentId,
       status: "active",
     });
-    console.log(commentAvailable);
     if (!commentAvailable) {
       return res.status(404).json({
         error: "Comment not found",
@@ -430,7 +473,6 @@ exports.addSubscriptions = async (req, res) => {
       channelId: channelId,
       subscriberId: userId,
     });
-    console.log(subscription);
     res.status(201).json(subscription);
   } catch (err) {
     console.error(err);
@@ -458,7 +500,6 @@ exports.getAllSubscribers = async (req, res) => {
     const subscribers = await Subscribers.find({
       channelId: channelId,
     });
-    // console.log(subscribers);
     res.status(200).json({
       subscribers: subscribers,
       userSubscribed: userSubscribed ? true : false,
@@ -471,7 +512,6 @@ exports.getAllSubscribers = async (req, res) => {
 };
 
 exports.deleteSubscriptions = async (req, res) => {
-  console.log("deleteSubscriptions");
   const userId = req.userId;
   const channelId = req.params.channelId;
   try {
@@ -479,7 +519,6 @@ exports.deleteSubscriptions = async (req, res) => {
       channelId: channelId,
       subscriberId: userId,
     });
-    // console.log(subscriptionAvailable);
     if (!subscriptionAvailable) {
       return res.sendStatus(404);
     }
@@ -561,9 +600,6 @@ exports.addCommentLike = async (req, res) => {
   const commentId = req.params.commentId;
   const userId = req.userId;
   const videoId = req.params.videoId;
-  console.log(req.params);
-  console.log(req.userId);
-
   try {
     const comment = await Comments.findOne({
       _id: commentId,
@@ -619,9 +655,6 @@ exports.deleteVideoLike = async (req, res) => {
 };
 
 exports.deleteCommentLike = async (req, res) => {
-  console.log("deleteCommentLike fired");
-  console.log("params:", req.params);
-  console.log("userId:", req.userId);
   const commentId = req.params.commentId;
   const userId = req.userId;
   try {
@@ -629,7 +662,7 @@ exports.deleteCommentLike = async (req, res) => {
       commentId: commentId,
       userId: userId,
     });
-    console.log(commentsLikesAvailable);
+  
     if (!commentsLikesAvailable) {
       return res.sendStatus(404);
     }

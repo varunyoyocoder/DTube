@@ -6,13 +6,11 @@ function authenticateAccessToken(req, res, next) {
   const authHeader = req.headers["authorization"];
 
   const token = authHeader && authHeader.split(" ")[1];
-  const decoded = jwt.decode(token);
 
   if (!token){
  console.log("No token");
     return res.status(401).json({message:"token empty"});
   } 
-   console.log(decoded);
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, payload) => {
     if (err) return res.status(401).json({error:"invalid access token"});
     const result = await Users.findOne({ username: payload.username }); 
@@ -26,7 +24,6 @@ if (result.isBanned) {
         error: "User is banned",
     });
 }
-
     req.userId = result._id;
     req.user=result;
     next();

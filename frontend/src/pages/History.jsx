@@ -18,7 +18,6 @@ function History() {
     const fetchVideos = async () => {
       try {
         const response = await api.get("/videos/history");
-        console.log("Fetched History videos:", response.data);
         setVideos(response.data);
       } catch (err) {
         console.error("Failed to fetch videos:", err);

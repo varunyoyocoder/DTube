@@ -19,6 +19,7 @@ const {
   addSubscriptions,
   deleteSubscriptions,
   reportVideo,
+  searchVideos,
   
   getAllSubscribers,
   getAllSubscriptions,
@@ -36,6 +37,7 @@ router.get("/test", (req, res) => {
 router.get("/", getAllVideos);
 router.get("/history", getHistory);
 router.get("/liked", getLikedVideos);
+router.get("/search", searchVideos);
 
 router.get("/channel/:channelId", getVideoByChannelId);
 router.get("/channel/:channelId/subscribers", getAllSubscribers);

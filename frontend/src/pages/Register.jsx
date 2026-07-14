@@ -13,6 +13,7 @@ function Register() {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const handleChange = (e) => {
     setForm({
@@ -22,6 +23,8 @@ function Register() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
     const captchaToken = recaptchaRef.current.getValue();
     if (!captchaToken) {
       alert("Please complete reCAPTCHA");
@@ -29,16 +32,19 @@ function Register() {
     }
     try {
       const response = await api.post("/auth/register", {
-        username: form.username,
-        email: form.email,
-        password: form.password,
+        username: form.username.trim(),
+        email: form.email.trim(),
+        password: form.password.trim(),
         captchaToken: captchaToken,
       });
-      recaptchaRef.current.reset();
       alert("Registration successful");
       navigate("/login");
     } catch (err) {
       setError(err.response?.data?.error || "Registration failed");
+    }
+    finally {
+        recaptchaRef?.current.reset();
+      setLoading (false);
     }
   };
   return (
@@ -48,12 +54,14 @@ function Register() {
         {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
           <input
+          required
             name="username"
             placeholder="Username"
             value={form.username}
             onChange={handleChange}
           />
           <input
+          required
             name="email"
             type="email"
             placeholder="Email"
@@ -61,6 +69,7 @@ function Register() {
             onChange={handleChange}
           />
           <input
+          required
             name="password"
             type="password"
             placeholder="Password"
@@ -73,7 +82,9 @@ function Register() {
               sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
             />
           </div>
-          <button type="submit">Register</button>
+         <button type="submit" disabled={loading}>
+    {loading ? "Registering..." : "Register"}
+</button>
         </form>
         <div className="login-link">
           <li>  

@@ -21,7 +21,8 @@ function Watch() {
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [subscribers, setSubscribers] = useState(0);
-  const [subscribeStatus, setSubscribeStatus] = useState(false);
+  const [subscribing,setSubscribing]=useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(false);
   useEffect(() => {
     const fetchVideoData = async () => {
       try {
@@ -37,7 +38,7 @@ function Watch() {
         setVideoLikeStatus(likesRes.data.userLiked);
         setVideoComments(commentsRes.data);
         setSubscribers(subscribersRes.data.subscribers.length);
-        setSubscribeStatus(subscribersRes.data.userSubscribed);
+        setIsSubscribed(subscribersRes.data.userSubscribed);
       } catch (err) {
         console.error("Failed to load watch page:", err);
       } finally {
@@ -62,18 +63,23 @@ function Watch() {
   };
 
   const handleAddSubscription = async () => {
+    if (subscribing) return;
+    setSubscribing(true);
     try {
-      if (subscribeStatus) {
+      if (isSubscribed ) {
         await api.delete(`/videos/channel/${video.ownerId}/subscribe/delete`);
         setSubscribers((prev) => prev - 1);
-        setSubscribeStatus(false);
+        setIsSubscribed(false);
       } else {
         await api.post(`/videos/channel/${video.ownerId}/subscribe/add`);
         setSubscribers((prev) => prev + 1);
-        setSubscribeStatus(true);
+        setIsSubscribed(true);
       }
     } catch (err) {
       console.error("Failed to update subscription:", err);
+    }
+    finally{
+      setSubscribing(false);
     }
   };
 
@@ -208,10 +214,15 @@ function Watch() {
 
             {(video.ownerId !== userId) && (
               <Button
-                variant={subscribeStatus ? "secondary" : "success"}
+                variant={isSubscribed ? "secondary" : "success"}
                 onClick={handleAddSubscription}
-              >
-                {subscribeStatus ? "Subscribed" : "Subscribe"}
+                 disabled={subscribing}
+              > 
+                {subscribing
+                  ? "Please wait..."
+                  : isSubscribed
+                    ? "Unsubscribe"
+                    : "Subscribe"}
               </Button>
             )}
           </div>

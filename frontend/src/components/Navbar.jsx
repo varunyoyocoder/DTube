@@ -9,6 +9,7 @@ function Navbar() {
   const loggedIn = !!localStorage.getItem("accessToken");
   const username = localStorage.getItem("username");
   const userId = localStorage.getItem("userId");
+  const [search,setSearch]=useState("")
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
   const [profileImage, setProfileImage] = useState(defaultUser);
@@ -36,6 +37,14 @@ function Navbar() {
       console.log(err);
     }
   };
+const handleSearch = () => {
+  const trimmed = search.trim();
+  if (!trimmed) {
+    navigate("/home");
+    return;
+  }
+  navigate(`/home?search=${encodeURIComponent(trimmed)}`);
+};
 
   return (
     <nav className="navbar">
@@ -46,8 +55,10 @@ function Navbar() {
       </Link>
 
       <div className="search-section">
-        <input type="text" placeholder="Search videos..." />
-        <button>🔍</button>
+        <input type="text" placeholder="Search videos..." value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => {
+    if (e.key === "Enter") handleSearch();
+}}/>
+        <button  onClick={handleSearch}>🔍</button>
       </div>
 
       <div className="user-section">
