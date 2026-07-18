@@ -73,9 +73,7 @@ const captchaToken = recaptchaRef.current.getValue();
     <div className="login-container">
       <div className="login-card">
         <h1>Login</h1>
-
         {error && <p className="error">{error}</p>}
-
         <form onSubmit={handleSubmit}>
           <input
             name="email"
@@ -84,7 +82,6 @@ const captchaToken = recaptchaRef.current.getValue();
             value={form.email}
             onChange={handleChange}
           />
-
           <input
             name="password"
             type="password"
@@ -92,11 +89,9 @@ const captchaToken = recaptchaRef.current.getValue();
             value={form.password}
             onChange={handleChange}
           />
-
           <div className="forgot-password">
             <Link to="/password/forgot">Forgot password?</Link>
           </div>
-
           <div className="recaptcha">
             <ReCAPTCHA
               ref={recaptchaRef}
@@ -107,13 +102,14 @@ const captchaToken = recaptchaRef.current.getValue();
     {loading ? "Logging in..." : "Login"}
 </button>
         </form>
-
         <div className="register-link">
-          <Link to="/register">Don't have an account? Register</Link>
+          <div>
+            <Link to="/register">Don't have an account? Register</Link>
+          </div>
+          <Link to="/dauthLogin">Continue with DAuth</Link>
         </div>
       </div>
     </div>
   );
 }
-
 export default Login;

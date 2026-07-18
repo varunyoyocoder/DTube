@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const axios = require("axios");
 const Users = require("../models/Users");
 const RefreshTokens = require("../models/RefreshTokens");
 
@@ -10,25 +10,18 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../utils/token");
-
-const axios = require("axios");
-
 exports.register = async (req, res) => {
   const { username, email, password, captchaToken } = req.body;
-
   if (!captchaToken) {
     return res.status(400).json({
       error: "Please complete reCAPTCHA",
     });
   }
-
   const verifyURL =
     `https://www.google.com/recaptcha/api/siteverify` +
     `?secret=${process.env.RECAPTCHA_SECRET_KEY}` +
     `&response=${captchaToken}`;
-
   const response = await axios.post(verifyURL);
-
   if (!response.data.success) {
     return res.status(400).json({
       error: "reCAPTCHA verification failed",
@@ -128,15 +121,20 @@ exports.login = async (req, res) => {
   });
 };
 exports.me = async (req, res) => {
-
+  try{
     res.json({
-        userId: req.userId,
-        username: req.user.username,
-        role: req.user.role,
-        profileImage: req.user.profileImageURL,
-        isBanned: req.user.isBanned,
+      userId: req.userId,
+      username: req.user.username,
+      role: req.user.role,
+      profileImage: req.user.profileImageURL,
+      isBanned: req.user.isBanned,
     });
+  }
+  catch(err){
+    res.status(500).json({error:err.message})
+  }
 };
+
 exports.refreshToken = async (req, res) => {
   try {
     const token = req.body.refreshToken;
@@ -179,8 +177,7 @@ exports.logout = async (req, res) => {
     await RefreshTokens.deleteOne({
       refreshToken: req.body.refreshToken,
     });
-
-    return res.send(200).json({
+    return res.status(200).json({
       message: "Logged out successfully",
     });
   } catch (err) {
@@ -189,3 +186,69 @@ exports.logout = async (req, res) => {
     });
   }
 };
+
+exports.dauthToken = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const tokenParams = new URLSearchParams({
+      client_id: process.env.DAUTH_CLIENT_ID,
+      client_secret: process.env.DAUTH_CLIENT_SECRET,
+      code,
+      redirect_uri: process.env.DAUTH_REDIRECT_URI,
+      grant_type: "authorization_code",
+    });
+    const tokenResponse = await axios.post(
+      "https://auth.delta.nitt.edu/api/oauth/token",
+      tokenParams,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+    const userResponse = await axios.post(
+      "https://auth.delta.nitt.edu/api/resources/user",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${tokenResponse.data.access_token}`,
+        },
+      }
+    );
+    const { name, email } = userResponse.data;
+    let user = await Users.findOne({ email });
+    if (!user) {
+      const randomPassword = crypto.randomUUID();
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      user = await Users.create({
+        username: name,
+        email,
+        password: hashedPassword,
+      });
+    }
+    const accessToken = generateAccessToken({
+      username: user.username,
+      email: user.email,
+    });
+    const refreshToken = generateRefreshToken({
+      username: user.username,
+      email: user.email,
+    });
+    await RefreshTokens.create({ refreshToken });
+    return res.json({
+      accessToken,
+      refreshToken,
+      userId: user._id,
+      username: user.username,
+      profileImage: user.profileImageURL,
+      userRole: user.role,
+      isBanned: user.isBanned,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: err.response?.data || err.message,
+    });
+  }
+};
+

@@ -31,7 +31,7 @@ function Navbar() {
       });
       console.log("Sending request...");
       localStorage.clear();
-      alert(response.data.message);
+      alert("logging out");
       navigate("/login");
     } catch (err) {
       console.log(err);

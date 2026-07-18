@@ -1,0 +1,53 @@
+.dauth-container {
+     min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+     justify-content: center;
+    align-items: center;
+    margin-top: 60px;
+}
+
+.dauth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface, #12241a);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 36px;
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+}
+
+.dauth-title {
+    color: #2edb1f;
+    text-align: center;
+    font-size: 5rem;
+    font-weight: 300;
+    margin-bottom: 50px;
+}
+
+.dauth-button {
+    width: 320px;
+    height: 90px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    color: white;
+    font-size: 2rem;
+    text-decoration: none;
+    border-radius: 18px;
+    border: 2px solid #333;
+    transition: 0.25s;
+}
+
+.dauth-button:hover {
+    background: #111;
+    border-color: #2edb1f;
+}
+
+.delta-symbol {
+    color: #2edb1f;
+    font-size: 3rem;
+    font-weight: bold;
+    margin-left: 10px;
+}

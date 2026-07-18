@@ -22,7 +22,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use((response) => response,
   async (errorRequest) => {
     const originalRequest = errorRequest.config;
-console.log("Response interceptor:", errorRequest.response?.status);
+    console.log("Response interceptor:", errorRequest.response?.status);
     if (!originalRequest || authRoutes.includes(originalRequest.url) || originalRequest._retry) {
       return Promise.reject(errorRequest);
     }

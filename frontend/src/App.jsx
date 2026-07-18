@@ -14,19 +14,23 @@ import History from "./pages/History";
 import LikedVideos from"./pages/Liked";
 import PublicRoute  from "./services/protectingRoutes";
 import AdminRoute from "./services/AdminRoute";
+import DauthLogin from "./pages/DauthLogin";
+import DAuthCallback from "./pages/DAuthCallback";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>}/>
+      <Route path="/dauth/callback" element={<DAuthCallback />} />
+      <Route path="/" element={<Home/>}/>
+      <Route path="/home" element={<Home/>}/>
+      <Route path="/dauthLogin" element={<DauthLogin/>}/>
+      <Route path="/login" element={<PublicRoute><Login/></PublicRoute>}/>
       <Route path="/register" element={<PublicRoute><Register/></PublicRoute>}/>
       <Route path="/password/forgot" element={<PublicRoute><Forgot/></PublicRoute>}/>
       <Route path="/password/reset" element={<PublicRoute><Reset/></PublicRoute>}/>
-      <Route path="/channel/:channelId" element={<Channel />} />
-      <Route path="/create-video" element={<CreateVideo />} />
-      <Route path="/watch/:videoId" element={<Watch />} />
+      <Route path="/channel/:channelId" element={<Channel/>} />
+      <Route path="/create-video" element={<CreateVideo/>} />
+      <Route path="/watch/:videoId" element={<Watch/>} />
       <Route path="/admin/dashboard" element={<AdminRoute><Admin/></AdminRoute>} />
       <Route path="/history" element={<History/>} />
       <Route path="/likedVideos" element={<LikedVideos/>} />
