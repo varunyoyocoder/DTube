@@ -1,5 +1,5 @@
 import "../styles/Navbar.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate,useLocation } from "react-router-dom";
 import logo from "../assets/dtube-logo.png";
 import defaultUser from "../assets/user.png";
 import { useState, useEffect } from "react";
@@ -9,6 +9,7 @@ function Navbar() {
   const loggedIn = !!localStorage.getItem("accessToken");
   const username = localStorage.getItem("username");
   const userId = localStorage.getItem("userId");
+  const location=useLocation();
   const [search,setSearch]=useState("")
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
@@ -37,6 +38,12 @@ function Navbar() {
       console.log(err);
     }
   };
+  useEffect(() => {
+  if (location.pathname === "/" || location.pathname === "/home") {
+    const params = new URLSearchParams(location.search);
+    setSearch(params.get("search") || "");
+  }
+}, [location.pathname, location.search]);
 const handleSearch = () => {
   const trimmed = search.trim();
   if (!trimmed) {

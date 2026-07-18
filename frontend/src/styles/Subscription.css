@@ -116,3 +116,23 @@
     font-size: 0.85rem;
   }
 }
+@media (max-width: 432px) {
+  .subscription-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .subscription-image {
+    margin-right: 0;
+  }
+
+  .subscription-details {
+    width: 100%;
+  }
+
+  .unsubscribe-btn {
+    margin-left: 0;
+    width: 100%;
+  }
+}

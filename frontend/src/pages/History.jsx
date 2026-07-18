@@ -17,7 +17,7 @@ function History() {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const response = await api.get("/videos/history");
+        const response = await api.get("/videos/history")
         setVideos(response.data);
       } catch (err) {
         console.error("Failed to fetch videos:", err);

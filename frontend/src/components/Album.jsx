@@ -28,13 +28,14 @@ function Album({
   : [];
   
 useEffect(() => {
-  if (!fetchVideos || loading || !hasMore) return;
+  if (!fetchVideos || loading ) return;
+   
   const fetchInitialVideos = async () => {
     setLoading(true);
-    try {
-      setFetchedVideos([]);
+    setFetchedVideos([]);
       setPage(1);
       setHasMore(true);
+    try {
       const separator = endpoint.includes("?") ? "&" : "?";
       const response = await api.get(
         `${endpoint}${separator}page=1&limit=3`
@@ -53,7 +54,7 @@ useEffect(() => {
 }, [endpoint, fetchVideos]);
 
 const loadVideos = async (currentPage = page) => {
-  if (!fetchVideos || loading || !hasMore) return;
+  if (!fetchVideos || loading || !hasMore ) return;
   setLoading(true);
   try {
     const separator = endpoint.includes("?") ? "&" : "?";

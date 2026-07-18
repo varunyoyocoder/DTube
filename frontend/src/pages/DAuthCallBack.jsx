@@ -1,11 +1,14 @@
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function DAuthCallback() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const login = async () => {
+          if (loading) return;
+    setLoading(true);
       const params = new URLSearchParams(window.location.search);
       const returnedState = params.get("state");
       const storedState = sessionStorage.getItem("dauth_state");
@@ -38,6 +41,8 @@ export default function DAuthCallback() {
         navigate("/home");
       } catch (err) {
         console.error(err);
+          console.log(err.response?.status);
+        console.log(err.response?.data);
         navigate("/login");
       }
     };

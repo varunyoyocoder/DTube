@@ -6,6 +6,7 @@ const authRoutes = [
   "/auth/login",
   "/auth/register",
   "/auth/token",
+  "/auth/dauth/token",
 ];
 
 api.interceptors.request.use((config) => {

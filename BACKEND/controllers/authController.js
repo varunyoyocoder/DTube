@@ -1,15 +1,12 @@
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const jwt = "jsonwebtoken";
 const axios = require("axios");
 const Users = require("../models/Users");
 const RefreshTokens = require("../models/RefreshTokens");
 
 const strongPassword = require("../utils/password");
 
-const {
-  generateAccessToken,
-  generateRefreshToken,
-} = require("../utils/token");
+const { generateAccessToken, generateRefreshToken } = require("../utils/token");
 exports.register = async (req, res) => {
   const { username, email, password, captchaToken } = req.body;
   if (!captchaToken) {
@@ -100,7 +97,6 @@ exports.login = async (req, res) => {
     email: user.email,
   });
 
-  
   const refreshToken = generateRefreshToken({
     username: user.username,
     email: user.email,
@@ -108,20 +104,19 @@ exports.login = async (req, res) => {
   await RefreshTokens.create({
     refreshToken,
   });
-  
 
   res.json({
     accessToken,
     refreshToken,
     userId: user._id,
     username: user.username,
-    profileImage:user.profileImageURL,
-    userRole:user.role,
-    isBanned:user.isBanned
+    profileImage: user.profileImageURL,
+    userRole: user.role,
+    isBanned: user.isBanned,
   });
 };
 exports.me = async (req, res) => {
-  try{
+  try {
     res.json({
       userId: req.userId,
       username: req.user.username,
@@ -129,9 +124,8 @@ exports.me = async (req, res) => {
       profileImage: req.user.profileImageURL,
       isBanned: req.user.isBanned,
     });
-  }
-  catch(err){
-    res.status(500).json({error:err.message})
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -188,6 +182,7 @@ exports.logout = async (req, res) => {
 
 exports.dauthToken = async (req, res) => {
   try {
+    console.log("Step 1");
     const { code } = req.body;
     const tokenParams = new URLSearchParams({
       client_id: process.env.DAUTH_CLIENT_ID,
@@ -196,6 +191,7 @@ exports.dauthToken = async (req, res) => {
       redirect_uri: process.env.DAUTH_REDIRECT_URI,
       grant_type: "authorization_code",
     });
+     console.log("Step 2");
     const tokenResponse = await axios.post(
       "https://auth.delta.nitt.edu/api/oauth/token",
       tokenParams,
@@ -203,8 +199,10 @@ exports.dauthToken = async (req, res) => {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-      }
+      },
     );
+    console.log("Step 3");
+  
     const userResponse = await axios.post(
       "https://auth.delta.nitt.edu/api/resources/user",
       {},
@@ -212,8 +210,9 @@ exports.dauthToken = async (req, res) => {
         headers: {
           Authorization: `Bearer ${tokenResponse.data.access_token}`,
         },
-      }
+      },
     );
+    console.log(userResponse.data);
     const { name, email } = userResponse.data;
     let user = await Users.findOne({ email });
     if (!user) {
@@ -250,4 +249,3 @@ exports.dauthToken = async (req, res) => {
     });
   }
 };
-

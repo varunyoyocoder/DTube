@@ -34,7 +34,7 @@ function Sidebar() {
         {userRole === "admin" && (
           <li>
             <NavLink to="/admin/dashBoard">
-              <span className="sidebar-icon">📺</span>
+              <span className="sidebar-icon">🖥️</span>
               <span className="sidebar-label">Admin Dashboard</span>
             </NavLink>
           </li>
