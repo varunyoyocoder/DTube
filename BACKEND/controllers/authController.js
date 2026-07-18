@@ -172,7 +172,6 @@ exports.refreshToken = async (req, res) => {
   }
 };
 exports.logout = async (req, res) => {
-  console.log("In logout");
   try {
     await RefreshTokens.deleteOne({
       refreshToken: req.body.refreshToken,

@@ -3,17 +3,19 @@ import "../styles/DauthLogin.css";
 function DauthLogin() {
    const loginWithDAuth = () => {
         const state = crypto.randomUUID();
-          const nonce = crypto.randomUUID();
-          const clientID=import.meta.env.VITE_DAUTH_CLIENT_ID;
-          const redirectURL=import.meta.env.VITE_DAUTH_REDIRECT_URI
-          const params = new URLSearchParams({
+        const nonce = crypto.randomUUID();
+        sessionStorage.setItem("dauth_state", state);
+        sessionStorage.setItem("dauth_nonce", nonce);
+        const clientID=import.meta.env.VITE_DAUTH_CLIENT_ID;
+        const redirectURL=import.meta.env.VITE_DAUTH_REDIRECT_URI
+        const params = new URLSearchParams({
             client_id: clientID,
             redirect_uri: redirectURL,
             response_type: "code",
             grant_type: "authorization_code",
             scope: "openid email profile user",
             state,
-            nonce,
+            nonce
           });
           window.location.href = `https://auth.delta.nitt.edu/authorize?${params.toString()}`;
   }

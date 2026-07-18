@@ -15,12 +15,12 @@ import LikedVideos from"./pages/Liked";
 import PublicRoute  from "./services/protectingRoutes";
 import AdminRoute from "./services/AdminRoute";
 import DauthLogin from "./pages/DauthLogin";
-import DAuthCallback from "./pages/DAuthCallback";
+import DAuthCallBack from "./pages/DAuthCallBack";
 
 function App() {
   return (
     <Routes>
-      <Route path="/dauth/callback" element={<DAuthCallback />} />
+      <Route path="/dauth/callback" element={<DAuthCallBack />} />
       <Route path="/" element={<Home/>}/>
       <Route path="/home" element={<Home/>}/>
       <Route path="/dauthLogin" element={<DauthLogin/>}/>
