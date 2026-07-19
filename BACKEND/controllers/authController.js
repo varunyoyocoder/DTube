@@ -180,20 +180,18 @@ exports.logout = async (req, res) => {
   }
 };
 
-exports.dauthToken = async (req, res) => {
+exports.googleToken = async (req, res) => {
+  const { code } = req.body;
   try {
-    console.log("Step 1");
-    const { code } = req.body;
     const tokenParams = new URLSearchParams({
-      client_id: process.env.DAUTH_CLIENT_ID,
-      client_secret: process.env.DAUTH_CLIENT_SECRET,
+      client_id: process.env.OAUTH_CLIENT_ID,
+      client_secret: process.env.OAUTH_CLIENT_SECRET,
       code,
-      redirect_uri: process.env.DAUTH_REDIRECT_URI,
+      redirect_uri: process.env.OAUTH_REDIRECT_URI,
       grant_type: "authorization_code",
     });
-     console.log("Step 2");
     const tokenResponse = await axios.post(
-      "https://auth.delta.nitt.edu/api/oauth/token",
+      "https://oauth2.googleapis.com/token",
       tokenParams,
       {
         headers: {
@@ -201,10 +199,8 @@ exports.dauthToken = async (req, res) => {
         },
       },
     );
-    console.log("Step 3");
-  
     const userResponse = await axios.post(
-      "https://auth.delta.nitt.edu/api/resources/user",
+      "https://openidconnect.googleapis.com/v1/userinfo",
       {},
       {
         headers: {
@@ -212,7 +208,6 @@ exports.dauthToken = async (req, res) => {
         },
       },
     );
-    console.log(userResponse.data);
     const { name, email } = userResponse.data;
     let user = await Users.findOne({ email });
     if (!user) {
@@ -222,6 +217,74 @@ exports.dauthToken = async (req, res) => {
         username: name,
         email,
         password: hashedPassword,
+        authProvider: "google",
+      });
+    }
+    const accessToken = generateAccessToken({
+      username: user.username,
+      email: user.email,
+    });
+    const refreshToken = generateRefreshToken({
+      username: user.username,
+      email: user.email,
+    });
+    await RefreshTokens.create({ refreshToken });
+    return res.json({
+      accessToken,
+      refreshToken,
+      userId: user._id,
+      username: user.username,
+      profileImage: user.profileImageURL,
+      userRole: user.role,
+      isBanned: user.isBanned,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: err.response?.data || err.message,
+    });
+  }
+};
+
+exports.dauthToken = async (req, res) => {
+  try {
+    const { code } = req.body;
+    console.log(process.env.OAUTH_REDIRECT_URI);
+    const tokenParams = new URLSearchParams({
+      client_id: process.env.DAUTH_CLIENT_ID,
+      client_secret: process.env.DAUTH_CLIENT_SECRET,
+      code,
+      redirect_uri: process.env.DAUTH_REDIRECT_URI,
+      grant_type: "authorization_code",
+    });
+    const tokenResponse = await axios.post(
+      "https://auth.delta.nitt.edu/api/oauth/token",
+      tokenParams,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      },
+    );
+    const userResponse = await axios.post(
+      "https://auth.delta.nitt.edu/api/resources/user",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${tokenResponse.data.access_token}`,
+        },
+      },
+    );
+    const { name, email } = userResponse.data;
+    const randomPassword = crypto.randomUUID();
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+    let user = await Users.findOne({ email });
+    if (!user) {
+      user = await Users.create({
+        username: name,
+        email,
+        password: hashedPassword,
+        authProvider: "dauth",
       });
     }
     const accessToken = generateAccessToken({

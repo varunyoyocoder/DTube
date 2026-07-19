@@ -1,11 +1,14 @@
-
 .login-container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 24px;
-  background: radial-gradient(circle at 30% 20%, #123021 0%, var(--bg, #0a1710) 60%);
+  background: radial-gradient(
+    circle at 30% 20%,
+    #123021 0%,
+    var(--bg, #0a1710) 60%
+  );
 }
 
 .login-card {
@@ -54,8 +57,8 @@
 }
 
 .login-card button[type="submit"] {
-  background: var(--accent, #1fb954);
-  color: white;
+  background: var(--accent, #1da544fa);
+  color: #fff;
   border: none;
   padding: 13px;
   border-radius: var(--radius-sm, 8px);
@@ -67,7 +70,7 @@
 }
 
 .login-card button[type="submit"]:hover {
-  background: var(--accent-hover, #169c45);
+  background: var(--accent-hover, #24944b);
   transform: translateY(-1px);
 }
 
@@ -95,6 +98,7 @@
 
 .register-link {
   text-align: center;
+  justify-content: center;
   margin-top: 22px;
   font-size: 14px;
 }
@@ -109,8 +113,41 @@
   text-decoration: underline;
 }
 
+.oauth-container {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.oauth-icon {
+  width: 56px;
+  height: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  background: var(--surface-2, #1a1a1a);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.oauth-icon:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent, #1fb954);
+  box-shadow: 0 0 12px rgba(31, 185, 84, 0.35);
+}
+
+.oauth-icon img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
 .recaptcha {
   display: flex;
+  justify-content: center;
   transform: scale(0.95);
   transform-origin: center;
 }
@@ -122,5 +159,19 @@
 
   .recaptcha {
     transform: scale(0.85);
+  }
+
+  .oauth-container {
+    gap: 14px;
+  }
+
+  .oauth-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .oauth-icon img {
+    width: 26px;
+    height: 26px;
   }
 }

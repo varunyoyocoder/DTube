@@ -17,8 +17,6 @@ function DauthLogin() {
             state,
             nonce
           });
-          console.log("Generated state:", state);
-console.log("Redirect URL:", `https://auth.delta.nitt.edu/authorize?${params.toString()}`);
           window.location.href = `https://auth.delta.nitt.edu/authorize?${params.toString()}`;
   }
     return (

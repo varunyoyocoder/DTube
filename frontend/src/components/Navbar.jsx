@@ -21,7 +21,6 @@ function Navbar() {
       setProfileImage(storedProfileImage);
     } else setProfileImage(defaultUser);
   }, []);
-
   const handleLogout = async (e) => {
     const refreshToken = localStorage.getItem("refreshToken");
     e.preventDefault();

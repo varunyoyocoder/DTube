@@ -1,5 +1,6 @@
 import "../styles/Register.css";
-
+import { FcGoogle } from "react-icons/fc";
+import dauthIcon from "../assets/dauth.png";
 import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
@@ -21,6 +22,28 @@ function Register() {
       [e.target.name]: e.target.value,
     });
   };
+
+    const loginWithDAuth = () => {
+  navigate("/dauthLogin");
+};
+
+const loginWithGoogle = () => {
+  const state = crypto.randomUUID();
+  sessionStorage.setItem("google_state", state);
+  const clientID = import.meta.env.VITE_OAUTH_CLIENT_ID;
+  const redirectURL = import.meta.env.VITE_OAUTH_REDIRECT_URI;
+  const params = new URLSearchParams({
+    client_id: clientID,
+    redirect_uri: redirectURL,
+    response_type: "code",
+    scope: "openid email profile",
+    state,
+    prompt:"select_account",
+  });
+  window.location.href =
+    `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -90,9 +113,25 @@ function Register() {
           <li>  
           <Link to="/login">Already have an account? User Login</Link>
           </li>
-          <li>  
-          <Link to="/login">Already have an account? Admin Login</Link>
-          </li>
+        </div>
+        <div className="oauth-container">
+          <button
+            className="oauth-icon"
+            onClick={loginWithGoogle}
+            title="Continue with Google"
+            aria-label="Continue with Google"
+          >
+            <FcGoogle size={32} />
+          </button>
+        
+          <button
+            className="oauth-icon"
+            onClick={loginWithDAuth}
+            title="Continue with DAuth"
+            aria-label="Continue with DAuth"
+          >
+            <img src={dauthIcon} alt="DAuth" />
+          </button>
         </div>
       </div>
     </div>

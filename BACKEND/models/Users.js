@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema(
     username: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
     },
 
@@ -19,6 +18,12 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+    },
+
+    authProvider: {
+      type: String,
+      enum: ["local", "dauth", "google"],
+      default: "local",
     },
 
     role: {

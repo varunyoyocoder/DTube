@@ -16,11 +16,13 @@ import PublicRoute  from "./services/protectingRoutes";
 import AdminRoute from "./services/AdminRoute";
 import DauthLogin from "./pages/DauthLogin";
 import DAuthCallBack from "./pages/DAuthCallBack";
+import OAuthCallBack from "./pages/OAuthCallBack"
 
 function App() {
   return (
     <Routes>
       <Route path="/dauth/callback" element={<DAuthCallBack />} />
+      <Route path="/google/callback" element={<OAuthCallBack />} />
       <Route path="/" element={<Home/>}/>
       <Route path="/home" element={<Home/>}/>
       <Route path="/dauthLogin" element={<DauthLogin/>}/>

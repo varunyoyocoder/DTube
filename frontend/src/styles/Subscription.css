@@ -69,6 +69,13 @@
   font-size: 1.2rem;
 }
 
+.admin-actions {
+  display: flex;
+  margin-left: auto;
+  gap: 10px;
+}
+
+
 .subscription-loading {
   text-align: center;
   margin-top: 80px;
@@ -93,6 +100,11 @@
   background: var(--accent-hover, #1cb150);
   transform: translateY(-1px);
 }
+
+.admin-actions .unsubscribe-btn.admin-btn {
+  margin-left: 0;
+}
+
 @media (max-width: 768px) {
   .subscription-container {
     padding: 15px;
@@ -116,7 +128,9 @@
     font-size: 0.85rem;
   }
 }
-@media (max-width: 432px) {
+
+
+@media (max-width: 600px) {
   .subscription-card {
     flex-direction: column;
     align-items: flex-start;
@@ -131,8 +145,21 @@
     width: 100%;
   }
 
-  .unsubscribe-btn {
-    margin-left: 0;
+  .unsubscribe-btn{
+    font-size: small;
+    padding: 8px 14px;
+  }
+
+  .admin-actions {
     width: 100%;
+    margin-left: 0;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .unsubscribe-btn,
+  .admin-btn {
+    width: 100%;
+    margin-left: 0;
   }
 }

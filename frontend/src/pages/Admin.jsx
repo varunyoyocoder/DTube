@@ -95,29 +95,31 @@ function Admin() {
                   </p>
                   <p>{user.videoCount} Videos</p>
                 </div>
-                {user.role!=="admin" && (
-                <button
-                className="unsubscribe-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleBan(user._id, user.isBanned);
-                }}
-                >
-                  {user.isBanned ? "UnBan" : "Ban"}
-                </button>
-                )}
-                {user.role!=="admin" && (
-                
-                <button
-                className="unsubscribe-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRole(user._id, user.role);
-                }}
-                >
-                  {user.role == "admin" ? "Make User" : "Make Admin"}
-                </button>
-                )}
+               <div className="admin-actions">
+  {user.role !== "admin" && (
+    <button
+      className="unsubscribe-btn"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleBan(user._id, user.isBanned);
+      }}
+    >
+      {user.isBanned ? "UnBan" : "Ban"}
+    </button>
+  )}
+
+  {user.role !== "admin" && (
+    <button
+      className="unsubscribe-btn admin-btn"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleRole(user._id, user.role);
+      }}
+    >
+      {user.role === "admin" ? "Make User" : "Make Admin"}
+    </button>
+  )}
+</div>
               </div>
             ))}
           </div>
